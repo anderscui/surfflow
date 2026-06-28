@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "SurfFlow",
+  "version": "0.1",
+  "description": "Stream web data seamlessly into your local repo.",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
