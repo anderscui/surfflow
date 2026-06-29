@@ -3,7 +3,8 @@
   "name": "SurfFlow",
   "version": "0.1",
   "description": "Stream web data seamlessly into your local repo.",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "history"],
+  "host_permissions": ["http://127.0.0.1:8000/*", "http://localhost:8000/*"],
   "action": {
     "default_popup": "popup.html"
   }
