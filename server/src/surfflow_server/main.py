@@ -1,7 +1,9 @@
 # coding=utf-8
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from surfflow_server.handlers.book_handler import extract_book_titles
 from surfflow_server.schemas import ExtractBookRequest
@@ -36,11 +38,21 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+templates = Jinja2Templates(directory='templates')
+app.mount(
+    '/static',
+    StaticFiles(directory='static'),
+    name='static',
+)
 
 
 @app.get("/")
-async def root():
-    return {"message": "Hello, SurfFlow!"}
+async def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name='index.html',
+        context={}
+    )
 
 
 @app.post("/api/v1/extract/books")

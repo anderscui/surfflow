@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="/static/css/pico.min.css">
+    <title>Surfing Flow</title>
+</head>
+<body>
+<main class="container">
+    <h1>Hello you!</h1>
+
+    <hgroup>
+        <h2>Get inspired with CSS</h2>
+        <p>How to use CSS to add glam to your Website?</p>
+    </hgroup>
+
+    <blockquote>
+        “Design is a funny word. Some people think
+        design means how it looks. But of course, if
+        you dig deeper, it's really how it works.”
+        <footer>
+            <cite>— Steve Jobs</cite>
+        </footer>
+    </blockquote>
+
+    <p>Paragraph before the horizontal line.</p>
+    <hr/>
+    <p>Paragraph after the horizontal line.</p>
+    <hr/>
+    <input type="text" name="text" placeholder="Text" aria-label="Text">
+    <input type="number" name="number" placeholder="Number" aria-label="Number">
+    <input type="password" name="password" placeholder="Password" aria-label="Password">
+
+    <hr/>
+    <input type="date" name="date" aria-label="Date">
+    <input type="datetime-local" name="datetime-local" aria-label="Datetime local">
+    <input type="month" name="month" aria-label="Month">
+    <input type="time" name="time" aria-label="Time">
+    <hr/>
+    <input
+            type="search"
+            name="search"
+            placeholder="Search"
+            aria-label="Search"
+    />
+
+    <hr/>
+    <input type="file">
+
+    <hr/>
+    <table class="striped">
+        <thead data-theme="dark">
+        <tr>
+            <th scope="col">Planet</th>
+            <th scope="col">Diameter (km)</th>
+            <th scope="col">Distance to Sun (AU)</th>
+            <th scope="col">Orbit (days)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row">Mercury</th>
+            <td>4,880</td>
+            <td>0.39</td>
+            <td>88</td>
+        </tr>
+        <tr>
+            <th scope="row">Venus</th>
+            <td>12,104</td>
+            <td>0.72</td>
+            <td>225</td>
+        </tr>
+        <tr>
+            <th scope="row">Earth</th>
+            <td>12,742</td>
+            <td>1.00</td>
+            <td>365</td>
+        </tr>
+        <tr>
+            <th scope="row">Mars</th>
+            <td>6,779</td>
+            <td>1.52</td>
+            <td>687</td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="row">Average</th>
+            <td>9,126</td>
+            <td>0.91</td>
+            <td>341</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <hr/>
+    <details name="example" open>
+        <summary>Accordion 1</summary>
+        <p>...</p>
+    </details>
+
+    <hr/>
+
+    <details name="example">
+        <summary>Accordion 2</summary>
+        <ul>
+            <li>...</li>
+            <li>...</li>
+        </ul>
+    </details>
+
+    <hr/>
+    <article>I’m a card!</article>
+
+    <hr/>
+    <form>
+        <fieldset role="group">
+            <input name="email" type="email" placeholder="Enter your email" autocomplete="email"/>
+            <input type="submit" value="Subscribe"/>
+        </fieldset>
+    </form>
+    
+    <hr/>
+    <p>Tooltip on a <a href="#" data-tooltip="Tooltip">link</a></p>
+    <p>Tooltip on <em data-tooltip="Tooltip">inline element</em></p>
+    <p>
+        <button data-tooltip="Tooltip">Tooltip on a button</button>
+    </p>
+
+</main>
+</body>
+</html>

@@ -3,11 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/pico.min.css">
     <style>
+        html {
+            font-size: 15px;
+        }
+
         body {
-            width: 500px;
-            min-height: 400px;
-            padding: 10px;
+            width: 800px;
+            min-height: 600px;
+            padding: 5px;
         }
 
         #result {
@@ -18,24 +23,29 @@
 </head>
 
 <body>
+<div role="group">
     <button id="showSelected">Show selected contents</button>
-    <button id="showHistory">Surfing History</button>
-
-    <hr>
+    <button id="showHistory">Surfing history</button>
 
     <button id="extractBooks">Extract books</button>
-    <button id="extractMovies">Extract movies</button>
+    <!--    <button id="extractMovies">Extract movies</button>-->
+</div>
 
-    <hr>
+<div role="group">
+    <button id="searchBooks" data-tooltip="Douban, Amazon and Goodreads">Search books</button>
+    <button id="searchMovies" data-tooltip="Douband and IMDB">Search movies</button>
+    <button id="searchPapers" data-tooltip="arXiv and Semantic Scholar">Search papers</button>
+    <button id="searchWikipedia">Search Wikipedia</button>
+</div>
 
-    <button id="summarizeSelected">Summarize selected</button>
-    <button id="analyzeSelected">Analyze selected</button>
+<!--<div role="group">-->
+<!--    <button id="summarizeSelected">Summarize selected</button>-->
+<!--    <button id="analyzeSelected">Analyze selected</button>-->
+<!--</div>-->
 
-    <hr>
+<div id="result"></div>
 
-    <div id="result"></div>
-
-    <script src="popup.js"></script>
+<script src="popup.js"></script>
 </body>
 
 </html>
