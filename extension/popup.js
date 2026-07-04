@@ -50,19 +50,75 @@ function waitForTabComplete(tabId) {
 }
 
 async function getRecentHistory() {
-  const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24小时前的时间戳
+  const DEFAULT_START_TIME = new Date("2000-01-01").getTime();
+  const MAX_HISTORY_ITEMS = 10_000_000;
+  // const MAX_HISTORY_ITEMS = 10;
 
-  const historyItems = await browser.history.search({
-    text: "",                // 空字符串代表搜所有网址
-    startTime: oneDayAgo,    // 开始时间
-    maxResults: 100          // 最多拿 100 条
+  const resp = await fetch(
+    "http://127.0.0.1:8000/api/v1/firefox/history/last_sync_time"
+  );
+
+  if (!resp.ok) {
+    throw new Error(`GET last_hist_sync_time error: HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  console.log(`sync time: ${data.last_sync_time}`);
+
+  const startTime = data.last_sync_time ?? DEFAULT_START_TIME;
+  const endTime = Date.now();
+  console.log("startTime:", new Date(startTime));
+  console.log("endTime:", new Date(endTime));
+
+  const items = await browser.history.search({
+    text: "",
+    startTime: startTime,
+    endTime: endTime,
+    maxResults: MAX_HISTORY_ITEMS,
   });
 
-  historyItems.forEach(item => {
-    console.log(`History: ${item.title} 🔗 ${item.url} (Visit Count: ${item.visitCount})`);
-  });
+  console.log(`total history: ${items.length}`);
 
-  return historyItems;
+  const req_sync = {
+    start_time: startTime,
+    end_time: endTime,
+    items: items,
+  };
+
+  const resp_sync = await fetch(
+    "http://127.0.0.1:8000/api/v1/firefox/history/sync",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req_sync),
+    }
+  );
+
+  if (!resp_sync.ok) {
+    throw new Error(`POST sync_hist error: HTTP ${resp_sync.status}`);
+  }
+
+  const data_sync = await resp_sync.json();
+  console.log(`Synced ${data_sync.item_count} items.`);
+  alert(`Synced ${data_sync.item_count} items.`);
+
+  // const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24小时前的时间戳
+  //
+  // const historyItems = await browser.history.search({
+  //   text: "",                // 空字符串代表搜所有网址
+  //   startTime: oneDayAgo,    // 开始时间
+  //   maxResults: 5          // 最多拿 100 条
+  // });
+  //
+  // historyItems.forEach(item => {
+  //   console.log(item);
+  //   console.log(`History: ${item.title} 🔗 ${item.url} (Visit Count: ${item.visitCount})`);
+  // });
+  //
+  // return historyItems;
+  return data_sync.item_count;
 }
 
 function buildDoubanSearchUrl(text, type) {

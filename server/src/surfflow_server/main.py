@@ -6,7 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from surfflow_server.handlers.book_handler import extract_book_titles
-from surfflow_server.schemas import ExtractBookRequest
+from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
+from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
 
 
 # from surfflow_server.api.routes import router
@@ -59,6 +60,19 @@ async def home(request: Request):
 async def extract_books(req: ExtractBookRequest):
     book_titles = extract_book_titles(req.text)
     return {"books": book_titles}
+
+
+@app.get("/api/v1/firefox/history/last_sync_time")
+async def get_ff_last_hist_sync_time():
+    return {'last_sync_time': get_last_hist_sync_time()}
+
+
+@app.post("/api/v1/firefox/history/sync")
+async def get_ff_sync_history_items(req: FirefoxHistorySyncRequest):
+    print(req.start_time, req.end_time, f'{len(req.items)} items:')
+    for item in req.items[:5]:
+        print(item)
+    return save_ff_history_sync(req)
 
 
 def run() -> None:
