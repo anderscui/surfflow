@@ -123,6 +123,17 @@ function renderMessage(message) {
   document.getElementById("result").innerHTML = `<p>${message}</p>`;
 }
 
+function itemTypeLabel(type) {
+  const labels = {
+    book: "书",
+    book_series: "丛书",
+    author: "作者",
+    movie: "影视",
+    celebrity: "影人",
+  };
+  return labels[type] ?? type ?? "";
+}
+
 function renderResults(items) {
   const resultEl = document.getElementById("result");
   currentResults = items;
@@ -133,18 +144,57 @@ function renderResults(items) {
   }
 
   resultEl.innerHTML = items.map((item, index) => `
-    <article>
-      <h4>${item.title || "Untitled"}</h4>
-      ${item.rating ? `<p><strong>Rating:</strong> ${item.rating}</p>` : ""}
-      ${item.meta ? `<p>${item.meta}</p>` : ""}
-      <button data-index="${index}" class="detail-btn">Details</button>
-    </article>
+    <div class="result-item" data-index="${index}">
+      <div class="result-title-row">
+        <div class="result-title-left">
+          <span class="type-badge">${itemTypeLabel(item.item_type)}</span>
+
+          <span class="result-title">
+            ${item.title || "Untitled"}
+          </span>
+
+          ${
+            item.labels?.length
+              ? `<span class="item-labels">${item.labels.map(label =>
+                    `<span class="item-label">[${label}]</span>`
+                  ).join("")}</span>`
+              : ""
+          }
+        </div>
+
+        ${
+          item.rating
+            ? `
+              <div class="rating">
+                ★ ${item.rating}
+                ${
+                  item.rating_count
+                    ? `<span class="rating-count">(${item.rating_count.toLocaleString()})</span>`
+                    : ""
+                }
+              </div>
+            `
+            : ""
+        }
+      </div>
+
+      ${
+        item.meta
+          ? `<div class="result-desc">${item.meta}</div>`
+          : ""
+      }
+
+      ${
+        item.status
+          ? `<div class="result-status">${item.status}</div>`
+          : ""
+      }
+    </div>
   `).join("");
 
-  document.querySelectorAll(".detail-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const item = currentResults[Number(btn.dataset.index)];
-      renderDetail(item);
+  document.querySelectorAll(".result-item").forEach(el => {
+    el.addEventListener("click", () => {
+      renderDetail(currentResults[Number(el.dataset.index)]);
     });
   });
 }
@@ -159,7 +209,7 @@ function renderDetail(item) {
       <h3>${item.title || "Untitled"}</h3>
       ${item.rating ? `<p><strong>Rating:</strong> ${item.rating}</p>` : ""}
       ${item.meta ? `<p>${item.meta}</p>` : ""}
-      ${item.url ? `<p><a href="${item.url}" target="_blank">Open Douban</a></p>` : ""}
+      ${item.url ? `<p><a href="${item.url}" target="_blank">Open ${item.source} page</a></p>` : ""}
     </article>
   `;
 
@@ -181,12 +231,13 @@ async function searchBooks() {
       return;
     }
 
-    if (!hasChineseText(query)) {
-      renderMessage("English book lookup will use Amazon + Goodreads later.");
-      return;
+    const items = hasChineseText(query)
+      ? await searchDouban(query, "book")
+      : await searchAmazonBooks(query);
+    console.log(`book items:`);
+    for (let item of items) {
+      console.log(item);
     }
-
-    const items = await searchDouban(query, "book");
     renderResults(items);
   } catch (err) {
     renderMessage(`Failed: ${err.message}`);
@@ -206,6 +257,10 @@ async function searchMovies() {
     }
 
     const items = await searchDouban(query, "movie");
+    console.log(`movie items:`);
+    for (let item of items) {
+      console.log(item);
+    }
     renderResults(items);
   } catch (err) {
     renderMessage(`Failed: ${err.message}`);

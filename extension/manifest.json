@@ -6,6 +6,11 @@
   "permissions": ["activeTab", "tabs", "scripting", "history"],
   "host_permissions": [
     "*://*.douban.com/*",
+
+    "https://www.amazon.com/*",
+    "https://www.amazon.co.uk/*",
+    "https://www.amazon.co.jp/*",
+
     "http://127.0.0.1:8000/*",
     "http://localhost:8000/*"
   ],

@@ -40,37 +40,63 @@ function extractDoubanSearchResultsFromPage() {
     return (text || "").replace(/\s+/g, " ").trim();
   }
 
+  function cleanRatingCount(text) {
+    return clean(text).replace(/[()]/g, "");
+  }
+
+  function parseRatingCount(text) {
+    const m = clean(text).match(/(\d+)/);
+    return m ? Number(m[1]) : null;
+  }
+
+  function inferDoubanItemType(url) {
+    if (!url) return "unknown";
+
+    if (url.includes("book.douban.com/series/")) return "book_series";
+    if (url.includes("book.douban.com/subject/")) return "book";
+    if (url.includes("book.douban.com/author/")) return "author";
+
+    if (url.includes("movie.douban.com/subject/")) return "movie";
+    if (url.includes("movie.douban.com/celebrity/")) return "celebrity";
+
+    return "unknown";
+  }
+
+  function extractLabels(item) {
+    return Array.from(item.querySelectorAll(".label"))
+      .map(el => el.textContent.replace(/[\[\]]/g, "").trim())
+      .filter(Boolean);
+  }
+
   const items = Array.from(document.querySelectorAll(".item-root"));
 
   return items.slice(0, 5).map((item) => {
-    const linkEl =
-      item.querySelector("a.title-text") ||
-      item.querySelector(".title a") ||
-      item.querySelector("a[href*='subject']");
+    const linkEl = item.querySelector(".title a");
+    const ratingEl = item.querySelector(".rating_nums");
+    const ratingCountEl = item.querySelector(".pl");
+    const metaEl = item.querySelector(".meta.abstract");
+    const statusEl = item.querySelector(".status-text");
 
-    const ratingEl =
-      item.querySelector(".rating_nums") ||
-      item.querySelector(".rating span") ||
-      item.querySelector("[class*='rating']");
-
-    const metaEl =
-      item.querySelector(".meta") ||
-      item.querySelector(".abstract") ||
-      item.querySelector(".detail");
+    const url = linkEl?.href || "";
 
     return {
       source: "douban",
       title: clean(linkEl?.textContent),
-      url: linkEl?.href || "",
+      url: url,
+      item_type: inferDoubanItemType(url),
       rating: clean(ratingEl?.textContent),
+      rating_count: parseRatingCount(ratingCountEl?.textContent),
+      rating_count_text: cleanRatingCount(ratingCountEl?.textContent),
       meta: clean(metaEl?.textContent),
+      status: clean(statusEl?.textContent),
+      labels: extractLabels(item),
     };
   }).filter(item => item.title || item.url);
 }
 
 async function searchDouban(query, type) {
   let tab = null;
-
+  console.log(`search douban...`);
   try {
     const searchUrl = buildDoubanSearchUrl(query, type);
 
@@ -85,14 +111,15 @@ async function searchDouban(query, type) {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const injected = await browser.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: {tabId: tab.id},
       func: extractDoubanSearchResultsFromPage,
     });
 
     return injected[0]?.result ?? [];
   } finally {
     if (tab?.id) {
-      await browser.tabs.remove(tab.id).catch(() => {});
+      await browser.tabs.remove(tab.id).catch(() => {
+      });
     }
   }
 }

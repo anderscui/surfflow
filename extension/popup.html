@@ -2,50 +2,120 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="./css/pico.min.css">
-    <style>
-        html {
-            font-size: 15px;
-        }
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="./css/pico.min.css">
+  <style>
+    html {
+      font-size: 15px;
+    }
 
-        body {
-            width: 800px;
-            min-height: 600px;
-            padding: 5px;
-        }
+    body {
+      width: 800px;
+      min-height: 600px;
+      padding: 5px;
+    }
 
-        article {
-          padding: 0.75rem;
-          margin-bottom: 0.75rem;
-        }
+    /*article {*/
+    /*  padding: 0.75rem;*/
+    /*  margin-bottom: 0.75rem;*/
+    /*}*/
 
-        button {
-          margin-right: 0.5rem;
-          margin-bottom: 0.5rem;
-        }
+    /*button {*/
+    /*  margin-right: 0.5rem;*/
+    /*  margin-bottom: 0.5rem;*/
+    /*}*/
 
-        #result {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-    </style>
+    #result {
+      margin: 0;
+      padding: 0;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .result-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .result-title-left {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .result-title {
+      font-weight: 600;
+    }
+
+    .item-labels {
+      display: flex;
+      gap: .2rem;
+    }
+
+    .item-label {
+      color: var(--pico-secondary);
+      font-size: .75rem;
+    }
+
+    .rating {
+      white-space: nowrap;
+      font-size: .9rem;
+    }
+
+    .rating-count {
+      color: var(--pico-muted-color);
+      margin-left: .2rem;
+    }
+
+    .result-desc {
+      margin-top: .15rem;
+      font-size: .82rem;
+      color: var(--pico-muted-color);
+    }
+
+    .result-status {
+      margin-top: .1rem;
+      font-size: .8rem;
+      color: var(--pico-secondary);
+    }
+
+    .result-item {
+      padding: 6px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      transition: background-color .15s;
+    }
+
+    .result-item:hover {
+      /*background: var(--pico-muted-background-color);*/
+      /*background-color: rgba(127, 127, 127, 0.08);*/
+      background-color: rgba(0, 122, 255, 0.10);
+    }
+
+    /** {*/
+    /*  outline: 1px solid rgba(255, 0, 0, 0.2);*/
+    /*}*/
+  </style>
 </head>
 
 <body>
 <div role="group">
-    <button id="showSelected">Show selected contents</button>
-    <button id="showHistory">Sync history</button>
+  <button id="showSelected">Show selected contents</button>
+  <button id="showHistory">Sync history</button>
 
-    <button id="extractBooks">Extract books</button>
-    <!--    <button id="extractMovies">Extract movies</button>-->
+  <button id="extractBooks">Extract books</button>
+  <!--    <button id="extractMovies">Extract movies</button>-->
 </div>
 
 <div role="group">
-    <button id="searchBooks" data-tooltip="Douban, Amazon and Goodreads">Search books</button>
-    <button id="searchMovies" data-tooltip="Douband and IMDB">Search movies</button>
-    <button id="searchPapers" data-tooltip="arXiv and Semantic Scholar">Search papers</button>
-    <button id="searchWikipedia">Search Wikipedia</button>
+  <button id="searchBooks" data-tooltip="Douban, Amazon and Goodreads">Search books</button>
+  <button id="searchMovies" data-tooltip="Douband and IMDB">Search movies</button>
+  <button id="searchPapers" data-tooltip="arXiv and Semantic Scholar">Search papers</button>
+  <button id="searchWikipedia">Search Wikipedia</button>
 </div>
 
 <!--<div role="group">-->
@@ -57,6 +127,7 @@
 
 <script src="page_context.js"></script>
 <script src="douban.js"></script>
+<script src="amazon.js"></script>
 <script src="popup.js"></script>
 </body>
 
