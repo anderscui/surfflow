@@ -24,3 +24,14 @@ class FirefoxHistorySyncResponse(BaseModel):
     end_time: int
 
     item_count: int
+
+
+class OperationLogRequest(BaseModel):
+    action: str
+    page_url: str | None = None
+    page_title: str | None = None
+    context: dict | None = None
+
+
+class OperationLogResponse(BaseModel):
+    id: int

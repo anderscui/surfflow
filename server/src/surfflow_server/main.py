@@ -7,11 +7,9 @@ from fastapi.templating import Jinja2Templates
 
 from surfflow_server.handlers.book_handler import extract_book_titles
 from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
+from surfflow_server.handlers.operation_log_handler import save_operation_log
 from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
-
-
-# from surfflow_server.api.routes import router
-# from surfflow_server.database import init_db
+from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 
 
 def create_app() -> FastAPI:
@@ -73,6 +71,15 @@ async def get_ff_sync_history_items(req: FirefoxHistorySyncRequest):
     for item in req.items[:5]:
         print(item)
     return save_ff_history_sync(req)
+
+
+@app.post(
+    "/api/v1/operations/log",
+    response_model=OperationLogResponse,
+)
+async def log_operation(req: OperationLogRequest):
+    log_id = save_operation_log(req)
+    return OperationLogResponse(id=log_id)
 
 
 def run() -> None:

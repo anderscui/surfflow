@@ -49,9 +49,20 @@ async function syncHistory() {
     throw new Error(`POST sync_hist error: HTTP ${resp_sync.status}`);
   }
 
+  await logOperation({
+    action: 'sync_history',
+
+    context: {
+      startTime,
+      endTime,
+      itemCount: items.length,
+    },
+  });
+
   const data_sync = await resp_sync.json();
   console.log(`Synced ${data_sync.item_count} items.`);
   alert(`Synced ${data_sync.item_count} items.`);
+
 
   return data_sync.item_count;
 }
@@ -239,6 +250,24 @@ async function searchBooks() {
       console.log(item);
     }
     renderResults(items);
+
+    await logOperation({
+      action: "search_book",
+
+      pageUrl: context.url,
+      pageTitle: context.title,
+
+      context: {
+        provider: hasChineseText(query)
+          ? "douban"
+          : "amazon",
+
+        query,
+
+        resultCount: items.length,
+      },
+    });
+
   } catch (err) {
     renderMessage(`Failed: ${err.message}`);
   }
@@ -262,6 +291,20 @@ async function searchMovies() {
       console.log(item);
     }
     renderResults(items);
+
+    await logOperation({
+      action: "search_movie",
+
+      pageUrl: context.url,
+      pageTitle: context.title,
+
+      context: {
+        provider: "douban",
+        query,
+        resultCount: items.length,
+      },
+    });
+
   } catch (err) {
     renderMessage(`Failed: ${err.message}`);
   }
