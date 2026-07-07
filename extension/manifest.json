@@ -3,7 +3,7 @@
   "name": "SurfFlow",
   "version": "0.1.1",
   "description": "Stream web data seamlessly into your local repo.",
-  "permissions": ["activeTab", "tabs", "scripting", "history"],
+  "permissions": ["activeTab", "tabs", "menus", "scripting", "history"],
   "host_permissions": [
     "*://*.douban.com/*",
 
@@ -16,5 +16,8 @@
   ],
   "action": {
     "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"]
   }
 }
