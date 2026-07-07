@@ -1,3 +1,5 @@
+import {waitForTabComplete} from "../commons/tabs.js";
+
 function buildAmazonBookSearchUrl(query) {
   return `https://www.amazon.com/s?k=${encodeURIComponent(query)}&i=stripbooks`;
 }
@@ -83,7 +85,7 @@ function extractAmazonBookSearchResultsFromPage() {
     .filter((item) => item.title || item.url);
 }
 
-async function searchAmazonBooks(query) {
+export async function searchAmazonBooks(query) {
   let tab = null;
   console.log(`search amazon...`);
   try {

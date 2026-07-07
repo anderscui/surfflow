@@ -1,3 +1,9 @@
+import {hasChineseText} from "./commons/texts.js";
+import {logOperation} from "./api.js";
+import {getCurrentPageContext} from "./page_context.js";
+import {searchDouban} from "./providers/douban.js";
+import {searchAmazonBooks} from "./providers/amazon.js";
+
 async function syncHistory() {
   const DEFAULT_START_TIME = new Date("2000-01-01").getTime();
   const MAX_HISTORY_ITEMS = 10_000_000;
@@ -73,11 +79,6 @@ document.getElementById("showSelected").addEventListener("click", async () => {
 
   console.log(selectedText);
   alert(selectedText);
-
-  // const q = encodeURIComponent(selectedText);
-  // browser.tabs.create({
-  //   url: `http://www.douban.com/search?q=${q}`
-  // });
 });
 
 document.getElementById("showHistory").addEventListener("click", async () => {

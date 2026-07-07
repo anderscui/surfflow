@@ -1,4 +1,4 @@
-async function getCurrentPageContext() {
+export async function getCurrentPageContext() {
   const [tab] = await browser.tabs.query({
     active: true,
     currentWindow: true,

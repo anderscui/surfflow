@@ -1,6 +1,4 @@
-function hasChineseText(text) {
-  return /[\u4e00-\u9fff]/.test(text);
-}
+import {waitForTabComplete} from "../commons/tabs.js";
 
 function buildDoubanSearchUrl(query, type) {
   const encoded = encodeURIComponent(query.trim());
@@ -14,25 +12,6 @@ function buildDoubanSearchUrl(query, type) {
   }
 
   throw new Error(`Unsupported douban search type: ${type}`);
-}
-
-function waitForTabComplete(tabId) {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      browser.tabs.onUpdated.removeListener(listener);
-      reject(new Error("Douban search page loading timeout."));
-    }, 15000);
-
-    function listener(updatedTabId, changeInfo, tab) {
-      if (updatedTabId === tabId && changeInfo.status === "complete") {
-        clearTimeout(timeout);
-        browser.tabs.onUpdated.removeListener(listener);
-        resolve(tab);
-      }
-    }
-
-    browser.tabs.onUpdated.addListener(listener);
-  });
 }
 
 function extractDoubanSearchResultsFromPage() {
@@ -94,7 +73,7 @@ function extractDoubanSearchResultsFromPage() {
   }).filter(item => item.title || item.url);
 }
 
-async function searchDouban(query, type) {
+export async function searchDouban(query, type) {
   let tab = null;
   console.log(`search douban...`);
   try {

@@ -1,4 +1,4 @@
-async function logOperation({
+export async function logOperation({
   action,
   pageUrl,
   pageTitle,
