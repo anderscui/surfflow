@@ -796,6 +796,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "sqlmodel" },
     { name = "tiktoken" },
+    { name = "toolz" },
     { name = "uvicorn" },
 ]
 
@@ -816,6 +817,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "sqlmodel", specifier = ">=0.0.39" },
     { name = "tiktoken", specifier = ">=0.13.0" },
+    { name = "toolz", specifier = ">=1.1.0" },
     { name = "uvicorn", specifier = ">=0.49.0" },
 ]
 
@@ -870,6 +872,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/96/d9/dfd086aa2d918c563a140720e0ce296cada1634efd2783d5cf51e05f984e/tiktoken-0.13.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:6644c9c2b5cf3916f5a3641d7d12fdb3f006a7b3d9ff6acdaec44e29ab1ff91e", size = 1181863, upload-time = "2026-05-15T04:51:15.025Z" },
     { url = "https://files.pythonhosted.org/packages/2f/68/a18b4f307086954fdae32714cb4f85562e34f9d34ab206e61f1816aa6018/tiktoken-0.13.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:5cb65b60b9408563676d874a3a4ee573370066f0dc4e29d84e82e989c6517424", size = 1239218, upload-time = "2026-05-15T04:51:16.103Z" },
     { url = "https://files.pythonhosted.org/packages/16/5b/f2aa703a4fc5d2dff73460a7d46cc2f3f44aa0f3dd8eeb20d2a0ecf68862/tiktoken-0.13.0-cp314-cp314t-win_amd64.whl", hash = "sha256:85b78cc3a2c3d48723ca751fa981f1fedccd54194ca0471b957364353a898b07", size = 918110, upload-time = "2026-05-15T04:51:17.237Z" },
+]
+
+[[package]]
+name = "toolz"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/d6/114b492226588d6ff54579d95847662fc69196bdeec318eb45393b24c192/toolz-1.1.0.tar.gz", hash = "sha256:27a5c770d068c110d9ed9323f24f1543e83b2f300a687b7891c1a6d56b697b5b", size = 52613, upload-time = "2025-10-17T04:03:21.661Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl", hash = "sha256:15ccc861ac51c53696de0a5d6d4607f99c210739caf987b5d2054f3efed429d8", size = 58093, upload-time = "2025-10-17T04:03:20.435Z" },
 ]
 
 [[package]]
