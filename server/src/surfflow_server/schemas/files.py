@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from archaeo import logger
 from archaeo.io.files import (get_file_size, get_file_hash, get_file_blocks,
                               get_file_created_time, get_file_modified_time,
-                              get_file_accessed_time)
+                              get_file_accessed_time, get_absolute_path)
 from archaeo.iterable import find_by
 
 
@@ -67,7 +67,7 @@ def get_file_type_mappings():
         FileTypes.audio: ('mp3', 'wav', 'aiff'),
         FileTypes.video: ('mp4', 'mkv', 'avi', 'rm', 'rmvb', 'wmv', 'm4p', 'm4v', 'mpg', 'mpeg', 'flv'),
         FileTypes.office: ('doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'rtf'),
-        FileTypes.text: ('txt', 'md'),
+        FileTypes.text: ('txt', 'md', 'vtt'),
         FileTypes.code: ('py', 'java', 'cs', 'm', 'sql'),
         FileTypes.data: ('csv', 'json',),
         FileTypes.zip: ('zip', 'gz', 'bz2', '7z', 'rar', 'tar'),
@@ -142,25 +142,27 @@ class FileInfo(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
     # collection of base dir, e.g. book, paper, movie, dataset, image
-    collection: str | None = CollectionTypes.unknown
+    collection: str = CollectionTypes.unknown
     # enum value based on `extension`
     file_type: str = FileTypes.unknown
 
     @classmethod
     def load_file(cls,
                   base_dir: str,
-                  raw_path: str,
+                  raw_path: str | Path,
                   tags: list[str] = None,
                   max_size_for_hash=1000 * 1000 * 1000):
 
-        def _need_to_calc_hash(file_path: str, collection_type: str, file_size, block_size=512):
+        def _need_to_calc_hash(file_path: str | Path, collection_type: str, file_size, block_size=512):
             if collection_type != CollectionTypes.icloud:
                 return True
             file_store_blocks = get_file_blocks(file_path)
-            logger.debug(f'file blocks: {file_store_blocks}')
             # in iCloud, a placeholder file's blocks is usually 0, on macOS, the block_size is 512.
             # here adding these rules to avoid downloading too many files from the iCloud server.
-            return file_store_blocks > 200 and (file_store_blocks * block_size > file_size * 0.6)
+            need_to_calc = file_store_blocks > 200 and (file_store_blocks * block_size > file_size * 0.6)
+            if not need_to_calc:
+                logger.debug(f'file blocks: {file_store_blocks}')
+            return need_to_calc
 
 
         if not raw_path:
@@ -168,13 +170,13 @@ class FileInfo(BaseModel):
         if not base_dir:
             raise ValueError(f'`base_dir` is required.')
 
-        base = Path(base_dir).expanduser()
-        p = Path(raw_path).expanduser()
-        relative_path = str(p.relative_to(base))
+        base_dir = get_absolute_path(base_dir)
+        raw_path = get_absolute_path(raw_path)
+        relative_path = str(raw_path.relative_to(base_dir))
 
-        name = p.name
-        stem = p.stem
-        extension = p.suffix.lower().lstrip(".")
+        name = raw_path.name
+        stem = raw_path.stem
+        extension = raw_path.suffix.lower().lstrip(".")
         size = get_file_size(raw_path)
         path_parts = list(Path(relative_path).parts[:-1])
 
@@ -199,8 +201,8 @@ class FileInfo(BaseModel):
 
         file_type = parse_file_type(extension)
 
-        return cls(base_dir=base_dir,
-                   raw_path=raw_path,
+        return cls(base_dir=str(base_dir),
+                   raw_path=str(raw_path),
                    relative_path=relative_path,
 
                    name=name,
@@ -225,17 +227,17 @@ class FileInfo(BaseModel):
 
 
 if __name__ == '__main__':
-    # base_dir = '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents'
-    # file = '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents/psy/.选择的悖论-用心理学解读人的经济行为.pdf.icloud'
+    # base_dir = '~/Library/Mobile Documents/com~apple~Preview/Documents'
+    # file = '~/Library/Mobile Documents/com~apple~Preview/Documents/psy/.选择的悖论-用心理学解读人的经济行为.pdf.icloud'
 
     # print(parse_file_type('.pdf'))
     # print(parse_file_type('md'))
     # print(parse_file_type('data'))
 
-    # base_dir = '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents'
-    # file = '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents/phil/人文科学的逻辑.pdf'
-    base_dir = '/Users/andersc/Downloads/books'
-    file = '/Users/andersc/Downloads/books/艾丽丝•门罗/你以为你是谁 (艾丽丝•门罗, 2023).epub'
+    # base_dir = '~/Library/Mobile Documents/com~apple~Preview/Documents'
+    # file = '~/Library/Mobile Documents/com~apple~Preview/Documents/phil/人文科学的逻辑.pdf'
+    base_dir = '~/Downloads/books'
+    file = '~/Downloads/books/艾丽丝•门罗/你以为你是谁 (艾丽丝•门罗, 2023).epub'
 
     fi = FileInfo.load_file(base_dir, file, tags=['psy'])
     print(fi)

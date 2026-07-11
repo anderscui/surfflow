@@ -20,14 +20,16 @@ logger.debug(f'working dir: {WORKING_DIR}')
 logger.debug(f'archive dir: {ARCHIVE_DIR}')
 
 SOURCE_DIRS = [
+    '~/Downloads/to_read',
     '~/Downloads/books/',
     '~/Downloads/movie',
     '~/data/corpus',
     '/Volumes/T2/books',
     '/Volumes/T2/movie',
+    '/Volumes/T2/media',
     '/Volumes/T2/corpus',
-    # '~/Library/Mobile Documents/com~apple~Preview/Documents',
-    '~/Library/Mobile Documents/com~apple~Preview/Documents/py',
+    # '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents/soc',
+    '~/Library/Mobile Documents/com~apple~Preview/Documents',
 ]
 SOURCE_DIRS = [expand_user_path(d.rstrip('/')) for d in SOURCE_DIRS]
 logger.debug(f'source dirs: {SOURCE_DIRS}, count: {len(SOURCE_DIRS)}')
