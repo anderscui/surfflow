@@ -1,8 +1,10 @@
 # coding=utf-8
+from pathlib import Path
+
 import time
 from collections import Counter
 
-from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, json_load
+from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, get_file_modified_time, json_load
 from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.schemas.files import FileInfo
 from surfflow_server.config import logger
@@ -15,7 +17,10 @@ def get_valid_prev_files(prev_file):
     valid_files = {}
     for item in prev_files:
         raw_path = item['raw_path']
-        if not file_exists(raw_path) or get_file_size(raw_path) != item['size'] or not item['hash']:
+        if (not file_exists(raw_path)
+                or get_file_size(raw_path) != item['size']
+                or get_file_modified_time(raw_path) != item['modification_time']
+                or not item['hash']):
             logger.debug(f'invalid prev file: {raw_path}')
             continue
         valid_files[raw_path] = item
@@ -61,6 +66,16 @@ def get_valid_prev_files(prev_file):
 #     json_dump(doc_embeddings, embedding_file)
 
 
+def can_reuse_file_info(file: str | Path, prev: dict) -> bool:
+    size = get_file_size(file)
+    mod_time = get_file_modified_time(file)
+
+    return (
+            prev.get('size') == size
+            and prev.get('modification_time') == mod_time
+    )
+
+
 def collect_files(output_file, prev_files=None):
     if prev_files is None:
         prev_files = {}
@@ -77,16 +92,18 @@ def collect_files(output_file, prev_files=None):
                                pattern='*.*',
                                excludes=lambda f: '.DS_Store' in str(f)):
 
-            if any(kw in str(file) for kw in ('.epub/', '.git/')):
+            file_path_str = str(file)
+            if any(kw in file_path_str for kw in ('.epub/', '.git/')):
                 continue
 
-            # if 'com~apple~Preview/' in file:
+            # if 'com~apple~Preview/' in file_path_str:
             #     continue
-            if 'com~apple~Preview/Documents/mine/' in str(file):
+            if 'com~apple~Preview/Documents/mine/' in file_path_str:
                 continue
 
-            if file in prev_files:
-                file_info = FileInfo.model_validate(prev_files[file])
+            prev = prev_files.get(file_path_str)
+            if prev:
+                file_info = FileInfo.model_validate(prev)
             else:
                 file_info = FileInfo.load_file(base_dir, file)
 
@@ -112,6 +129,4 @@ def collect_files(output_file, prev_files=None):
 
 
 if __name__ == '__main__':
-    # start = time.time()
-    collect_files('~/Downloads/local_files_260711_3.json')
-    # print(f'time elapsed: {time.time() - start}')
+    collect_files('~/Downloads/local_files_260712_2.json')

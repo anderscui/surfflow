@@ -148,7 +148,7 @@ class FileInfo(BaseModel):
 
     @classmethod
     def load_file(cls,
-                  base_dir: str,
+                  base_dir: str | Path,
                   raw_path: str | Path,
                   tags: list[str] = None,
                   max_size_for_hash=1000 * 1000 * 1000):
