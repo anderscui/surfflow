@@ -4,9 +4,12 @@ from pathlib import Path
 import time
 from collections import Counter
 
-from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, get_file_modified_time, json_load
+from archaeo.io.docs import LocalFileMetadata
+from archaeo.io.file_metadata import get_local_file_metadata
+from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, get_file_modified_time, json_load, \
+    get_absolute_path
 from surfflow_server.config import SOURCE_DIRS
-from surfflow_server.schemas.files import FileInfo
+from surfflow_server.schemas.files import FileInfo, CollectionTypes
 from surfflow_server.config import logger
 
 
@@ -26,6 +29,13 @@ def get_valid_prev_files(prev_file):
         valid_files[raw_path] = item
     logger.debug(f'valid prev files: {len(valid_files)}')
     return valid_files
+
+
+def get_prev_metadata(prev_file):
+    prev_metadata = json_load(prev_file)
+    logger.debug(f'prev metadata: {len(prev_metadata)}')
+
+    return prev_metadata
 
 
 # def determine_dup_files(hash_files: defaultdict[list]):
@@ -64,6 +74,48 @@ def get_valid_prev_files(prev_file):
 #     doc_embeddings = {doc: embedding for doc, embedding in zip(file_names, embeddings)}
 #     print('unique doc embeddings:', len(doc_embeddings))
 #     json_dump(doc_embeddings, embedding_file)
+
+
+def get_metadata(local_file: str | Path, metadata_file: str | Path, prev_metadata=None):
+    if prev_metadata is None:
+        prev_metadata = {}
+
+    local_file = get_absolute_path(local_file)
+    local_files = json_load(local_file)
+    logger.debug(f'total files: {len(local_files)}')
+
+    all_metadata = {}
+    start = time.time()
+    for file in local_files:
+        raw_path = file['raw_path']
+
+        if file['collection'] == CollectionTypes.icloud and not file['hash']:
+            logger.debug(f'skip metadata: {raw_path}')
+            continue
+
+        prev = prev_metadata.get(raw_path)
+        if prev:
+            all_metadata[raw_path] = prev
+        else:
+            try:
+                metadata = get_local_file_metadata(raw_path)
+            except Exception as e:
+                logger.error(f'get metadata error: {e}')
+                metadata = LocalFileMetadata()
+
+            try:
+                metadata_dump = metadata.model_dump(mode='json')
+            except Exception as e:
+                logger.error(f'dump metadata error: {raw_path}')
+                metadata_dump = {}
+            all_metadata[raw_path] = metadata_dump
+
+        if len(all_metadata) % 1000 == 0:
+            logger.debug(f'collected metadata: {len(all_metadata)}, time: {time.time() - start}')
+            json_dump(all_metadata, metadata_file)
+
+    logger.debug(f'collected metadata: {len(all_metadata)}, time: {time.time() - start}')
+    json_dump(all_metadata, metadata_file)
 
 
 def can_reuse_file_info(file: str | Path, prev: dict) -> bool:
@@ -129,4 +181,9 @@ def collect_files(output_file, prev_files=None):
 
 
 if __name__ == '__main__':
-    collect_files('~/Downloads/local_files_260712_2.json')
+    # prev_files = get_valid_prev_files('~/Downloads/local_files_260712_1.json')
+    # collect_files('~/Downloads/local_files_260713_1.json', prev_files=prev_files)
+
+    prev_meta = get_prev_metadata('~/Downloads/local_metadata_260713_3.json')
+    local_file = '~/Downloads/local_files_260713_1.json'
+    get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
