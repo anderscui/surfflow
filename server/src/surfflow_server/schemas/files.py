@@ -150,7 +150,7 @@ class FileInfo(BaseModel):
     def load_file(cls,
                   base_dir: str | Path,
                   raw_path: str | Path,
-                  tags: list[str] = None,
+                  tags: list[str] | None = None,
                   max_size_for_hash=1000 * 1000 * 1000):
 
         def _need_to_calc_hash(file_path: str | Path, collection_type: str, file_size, block_size=512):
@@ -163,7 +163,6 @@ class FileInfo(BaseModel):
             if not need_to_calc:
                 logger.debug(f'file blocks: {file_store_blocks}')
             return need_to_calc
-
 
         if not raw_path:
             raise ValueError(f'`raw_path` is required.')
