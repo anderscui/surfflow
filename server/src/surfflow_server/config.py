@@ -28,7 +28,7 @@ SOURCE_DIRS = [
     '/Volumes/T2/movie',
     '/Volumes/T2/media',
     '/Volumes/T2/corpus',
-    # '/Users/andersc/Library/Mobile Documents/com~apple~Preview/Documents/soc',
+    # '~/Library/Mobile Documents/com~apple~Preview/Documents/soc',
     '~/Library/Mobile Documents/com~apple~Preview/Documents',
 ]
 SOURCE_DIRS = [expand_user_path(d.rstrip('/')) for d in SOURCE_DIRS]

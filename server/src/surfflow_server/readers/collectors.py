@@ -8,7 +8,9 @@ from archaeo.io.docs import LocalFileMetadata
 from archaeo.io.file_metadata import get_local_file_metadata
 from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, get_file_modified_time, json_load, \
     get_absolute_path
+from archaeo.llm_providers import OllamaProvider
 from surfflow_server.config import SOURCE_DIRS
+from surfflow_server.embedders.text_embedders import LlmEmbedder
 from surfflow_server.schemas.files import FileInfo, CollectionTypes
 from surfflow_server.config import logger
 
@@ -65,15 +67,29 @@ def get_prev_metadata(prev_file):
 #     return possible_dups
 
 
-# def embed_files(local_file, embedding_file):
-#     embedder = VoyageEmbedder()
-#     files = json_load(local_file)[:100000]
-#     file_names = [f['stem'] for f in files]
-#     embeddings = embedder.get_doc_embeddings(file_names)
-#     assert len(file_names) == len(embeddings)
-#     doc_embeddings = {doc: embedding for doc, embedding in zip(file_names, embeddings)}
-#     print('unique doc embeddings:', len(doc_embeddings))
-#     json_dump(doc_embeddings, embedding_file)
+def embed_files(local_file,
+                metadata_file,
+                embedding_file,
+                embedder: LlmEmbedder):
+    def build_embedding_text(file_info: FileInfo, metadata: LocalFileMetadata | None) -> str:
+        return file_info.stem
+
+    files = json_load(local_file)[:10]
+    file_metadata = json_load(metadata_file)
+    file_embeddings = {}
+    start = time.time()
+    for file in files:
+        fi = FileInfo.model_validate(file)
+        meta = file_metadata.get(fi.raw_path)
+        embedding_text = build_embedding_text(fi, meta)
+        embedding = embedder.embed_text(embedding_text)
+        file_embeddings[fi.raw_path] = embedding
+
+        if len(file_embeddings) % 5 == 0:
+            logger.debug(f'embedded {len(file_embeddings)}, time: {time.time() - start}')
+
+    logger.debug(f'embedded {len(file_embeddings)}, time: {time.time() - start}')
+    json_dump(file_embeddings, embedding_file)
 
 
 def get_metadata(local_file: str | Path, metadata_file: str | Path, prev_metadata=None):
@@ -184,6 +200,12 @@ if __name__ == '__main__':
     # prev_files = get_valid_prev_files('~/Downloads/local_files_260712_1.json')
     # collect_files('~/Downloads/local_files_260713_1.json', prev_files=prev_files)
 
-    prev_meta = get_prev_metadata('~/Downloads/local_metadata_260713_3.json')
     local_file = '~/Downloads/local_files_260713_1.json'
-    get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
+    metadata_file = '~/Downloads/local_metadata_260713_3.json'
+    # prev_meta = get_prev_metadata(metadata_file)
+    # get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
+
+    output_embed_file = '~/Downloads/local_embeddings_260714_1.json'
+    embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'))
+    embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
+
