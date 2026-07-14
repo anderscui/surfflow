@@ -11,7 +11,7 @@ from archaeo.io.files import json_dump, list_files, file_exists, get_file_size, 
 from archaeo.llm_providers import OllamaProvider
 from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.embedders.text_embedders import LlmEmbedder
-from surfflow_server.schemas.files import FileInfo, CollectionTypes
+from surfflow_server.schemas.files import FileInfo, CollectionTypes, FileEmbedding
 from surfflow_server.config import logger
 
 
@@ -67,28 +67,59 @@ def get_prev_metadata(prev_file):
 #     return possible_dups
 
 
-def embed_files(local_file,
-                metadata_file,
-                embedding_file,
-                embedder: LlmEmbedder):
+def embed_files(local_file: str | Path,
+                metadata_file: str | Path,
+                embedding_file: str | Path,
+                embedder: LlmEmbedder,
+                batch_size: int = 50) -> None:
+
     def build_embedding_text(file_info: FileInfo, metadata: LocalFileMetadata | None) -> str:
         return file_info.stem
 
-    files = json_load(local_file)[:10]
+    files = json_load(local_file)[:100000]
     file_metadata = json_load(metadata_file)
-    file_embeddings = {}
-    start = time.time()
+
+    file_infos: list[FileInfo] = []
+    embedding_texts: list[str] = []
     for file in files:
         fi = FileInfo.model_validate(file)
-        meta = file_metadata.get(fi.raw_path)
+
+        raw_meta = file_metadata.get(fi.raw_path)
+        meta = LocalFileMetadata.model_validate(raw_meta) if raw_meta else None
+
         embedding_text = build_embedding_text(fi, meta)
-        embedding = embedder.embed_text(embedding_text)
-        file_embeddings[fi.raw_path] = embedding
 
-        if len(file_embeddings) % 5 == 0:
-            logger.debug(f'embedded {len(file_embeddings)}, time: {time.time() - start}')
+        file_infos.append(fi)
+        embedding_texts.append(embedding_text)
 
-    logger.debug(f'embedded {len(file_embeddings)}, time: {time.time() - start}')
+    file_embeddings: dict[str, FileEmbedding] = {}
+    start = time.time()
+
+    for start_index in range(0, len(embedding_texts), batch_size):
+        end_index = start_index + batch_size
+
+        batch_file_infos = file_infos[start_index:end_index]
+        batch_texts = embedding_texts[start_index:end_index]
+
+        batch_embeddings = embedder.embed_texts(batch_texts)
+        if len(batch_embeddings) != len(batch_texts):
+            raise ValueError(
+                "embedding count mismatch: "
+                f"expected={len(batch_texts)}, "
+                f"actual={len(batch_embeddings)}"
+            )
+
+        for file_info, embed_text, embedding in zip(batch_file_infos, batch_texts, batch_embeddings, strict=True):
+            file_embeddings[file_info.raw_path] = FileEmbedding(
+                dimension=len(embedding),
+                provider=embedder.provider.name,
+                model=embedder.provider.model,
+                text=embed_text,
+                embedding=embedding
+            ).model_dump(mode='json')
+
+        logger.debug(f'embedded {len(file_embeddings)}/{len(file_infos)}, time: {time.time() - start}')
+
     json_dump(file_embeddings, embedding_file)
 
 
@@ -197,6 +228,9 @@ def collect_files(output_file, prev_files=None):
 
 
 if __name__ == '__main__':
+    from surfflow_server.config import SURFFLOW_EMB_DB
+    from surfflow_server.embedders.embedding_caches import SqliteEmbeddingCache
+
     # prev_files = get_valid_prev_files('~/Downloads/local_files_260712_1.json')
     # collect_files('~/Downloads/local_files_260713_1.json', prev_files=prev_files)
 
@@ -205,7 +239,7 @@ if __name__ == '__main__':
     # prev_meta = get_prev_metadata(metadata_file)
     # get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
 
-    output_embed_file = '~/Downloads/local_embeddings_260714_1.json'
-    embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'))
+    output_embed_file = '~/Downloads/local_embeddings_260714_2.json'
+    cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
+    embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
     embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
-

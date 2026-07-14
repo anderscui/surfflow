@@ -225,6 +225,15 @@ class FileInfo(BaseModel):
                    file_type=file_type)
 
 
+class FileEmbedding(BaseModel):
+    dimension: int
+
+    text: str
+    provider: str
+    model: str
+    embedding: list[float]
+
+
 if __name__ == '__main__':
     # base_dir = '~/Library/Mobile Documents/com~apple~Preview/Documents'
     # file = '~/Library/Mobile Documents/com~apple~Preview/Documents/psy/.选择的悖论-用心理学解读人的经济行为.pdf.icloud'

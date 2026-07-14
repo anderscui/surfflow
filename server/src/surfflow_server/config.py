@@ -36,3 +36,4 @@ logger.debug(f'source dirs: {SOURCE_DIRS}, count: {len(SOURCE_DIRS)}')
 
 # REDIS_EMBEDDING_DB = os.getenv('REDIS_EMBEDDING_DB')
 SURFFLOW_DB = os.getenv('SURFFLOW_DB', '~/works/dbs/surfflow/surfflow.db')
+SURFFLOW_EMB_DB = os.getenv('SURFFLOW_EMB_DB', '~/works/dbs/surfflow/surfflow_emb.db')
