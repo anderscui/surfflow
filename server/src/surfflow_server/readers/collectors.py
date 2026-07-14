@@ -40,6 +40,16 @@ def get_prev_metadata(prev_file):
     return prev_metadata
 
 
+def collect_metadata(metadata_file: str):
+    metadata = json_load(metadata_file)
+    keys = Counter()
+    for meta in metadata.values():
+        meta_dict = meta.get('metadata') or {}
+        keys.update((k for k, v in meta_dict.items() if v))
+    print(keys.most_common())
+    json_dump(keys, '~/Downloads/local_metadata_keys.json')
+
+
 # def determine_dup_files(hash_files: defaultdict[list]):
 #     def by_parts(file_items):
 #         items = sorted(file_items, key=lambda f: len(PurePath(f['relative_path']).parts), reverse=True)
@@ -239,7 +249,9 @@ if __name__ == '__main__':
     # prev_meta = get_prev_metadata(metadata_file)
     # get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
 
-    output_embed_file = '~/Downloads/local_embeddings_260714_2.json'
-    cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
-    embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
-    embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
+    # output_embed_file = '~/Downloads/local_embeddings_260714_3.json'
+    # cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
+    # embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
+    # embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
+
+    collect_metadata(metadata_file)

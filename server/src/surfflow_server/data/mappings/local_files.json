@@ -1,0 +1,69 @@
+{
+  "properties": {
+    "base_dir": {"type": "keyword"},
+    "raw_path": {"type": "keyword"},
+
+    "parent_parts": {"type": "keyword"},
+    "parent_path": {
+      "type": "text",
+      "analyzer": "ik_smart",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 2048
+        }
+      }
+    },
+
+    "name": {"type": "text", "analyzer": "ik_smart"},
+    "stem": {"type": "text", "analyzer": "ik_smart"},
+    "extension": {"type": "keyword"},
+
+    "size": {"type": "long"},
+    "page_count": {"type": "integer"},
+
+    "creation_time": {"type": "date", "format": "strict_date_optional_time||epoch_millis"},
+    "modification_time": {"type": "date", "format": "strict_date_optional_time||epoch_millis"},
+    "last_access_time": {"type": "date", "format": "strict_date_optional_time||epoch_millis"},
+
+    "edition": {"type": "keyword"},
+    "year": {"type": "integer"},
+
+    "hash": {"type": "keyword"},
+    "tags": {"type": "keyword"},
+
+    "collection": {"type": "keyword"},
+    "file_type": {"type": "keyword"},
+
+    "metadata": {
+      "properties": {
+        "title": {"type": "text", "analyzer": "ik_smart"},
+        "author": {"type": "text", "analyzer": "ik_smart"},
+        "creator": {"type": "text", "analyzer": "ik_smart"},
+        "producer": {"type": "text", "analyzer": "ik_smart"},
+        "artist": {"type": "text", "analyzer": "ik_smart"},
+        "album": {"type": "text", "analyzer": "ik_smart"},
+        "genre": {"type": "text", "analyzer": "ik_smart"}
+      }
+    },
+
+    "outline_titles": {"type": "text", "analyzer": "ik_smart"},
+    "preview": {"type": "text", "analyzer": "ik_smart"},
+
+    "embedding": {
+      "type": "dense_vector",
+      "dims": 4096,
+      "index": true,
+      "similarity": "cosine"
+    },
+
+    "embedding_info": {
+      "properties": {
+        "provider": {"type": "keyword"},
+        "model": {"type": "keyword"},
+        "dimension": {"type": "integer"},
+        "text": {"type": "text", "index":  false}
+      }
+    }
+  }
+}
