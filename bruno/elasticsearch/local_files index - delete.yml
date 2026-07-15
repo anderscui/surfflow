@@ -1,0 +1,15 @@
+info:
+  name: local_files index - delete
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: http://localhost:9200/local_files
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

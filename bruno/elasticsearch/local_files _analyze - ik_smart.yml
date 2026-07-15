@@ -1,0 +1,22 @@
+info:
+  name: local_files _analyze - ik_smart
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: http://localhost:9200/_analyze
+  body:
+    type: json
+    data: |-
+      {
+        "analyzer": "ik_smart",
+        "text": "谈情说爱的哲学家：8场关于爱的跨时代讨论 ([德] 诺拉 · 克雷弗特, 2022)"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

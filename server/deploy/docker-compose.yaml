@@ -1,0 +1,75 @@
+services:
+  elasticsearch:
+    image: "elasticsearch-cn:9.3.7"
+    restart: always
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    volumes:
+      - ~/works/volumes/esdata:/usr/share/elasticsearch/data
+    networks:
+      - service
+    deploy:
+      resources:
+        limits:
+          memory: 2000m
+          cpus: '1.0'
+
+#  kibana:
+#    image: "kibana:8.12.2"
+#    restart: always
+#    ports:
+#      - 5601:5601
+#    environment:
+#      ELASTICSEARCH_URL: http://elasticsearch:9200
+#      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+#    networks:
+#      - elastic
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 768m
+
+#  redis-cache:
+#    image: "redis:7.2.6"
+#    restart: always
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 1100M
+#          cpus: '0.5'
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - ${REDIS_DIR}/data:/data
+#      - ${REDIS_DIR}/redis.conf:/usr/local/etc/redis/redis.conf
+#    networks:
+#      - service
+#    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+#
+#  postgres:
+#    image: "postgres:17.2"
+#    restart: always
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 500M
+#          cpus: '0.5'
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_USER=anders
+#      - POSTGRES_PASSWORD=cui
+#      - POSTGRES_DB=local_finder
+#    volumes:
+#      - ~/works/volumes/local_finder_pg:/var/lib/postgresql/data
+
+networks:
+  service:
+    driver: bridge

@@ -1,0 +1,7 @@
+info:
+  name: local_api
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit
