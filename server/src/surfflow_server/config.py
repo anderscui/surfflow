@@ -35,7 +35,7 @@ SOURCE_DIRS = [expand_user_path(d.rstrip('/')) for d in SOURCE_DIRS]
 logger.debug(f'source dirs: {SOURCE_DIRS}, count: {len(SOURCE_DIRS)}')
 
 ES_SERVER = os.getenv('ES_SERVER', 'http://localhost:9200')
-ES_INDEX = 'local_files'
+ES_INDEX_LOCAL_FILE = 'local_files'
 ES_VERSION = '20260715_1'
 ES_MAPPINGS_FILE = os.path.join(DATA_DIR, f'mappings/local_files.json')
 

@@ -9,11 +9,13 @@ from typing import Any
 from archaeo.io.docs import LocalFileMetadata
 from archaeo.iterable import filter_by_keys
 
-from surfflow_server.config import logger, ES_SERVER, ES_INDEX, ES_MAPPINGS_FILE
+from surfflow_server.config import logger, ES_SERVER, ES_INDEX_LOCAL_FILE, ES_MAPPINGS_FILE
 from surfflow_server.schemas.files import FileInfo, FileEmbedding
 
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch.helpers import BulkIndexError
+
+from surfflow_server.schemas.searchers import SearchedFileInfo, SearchedFileResult
 
 MAX_OUTLINE_TITLES = 50
 MAX_PREVIEW_LEN = 2000
@@ -137,7 +139,7 @@ class ElasticsearchClient:
                     excludes=None,
                     file_types=None,
                     min_file_size: int | None = None,
-                    size=10):
+                    size=10) -> ObjectApiResponse:
 
         if excludes is None:
             excludes = ['embedding']
@@ -152,12 +154,18 @@ class ElasticsearchClient:
             "bool": {
                 "must": [
                     {
-                        "match": {
-                            "stem": {
-                                "query": query,
-                                "minimum_should_match": "3<90%",
-                                "boost": 1
-                            }
+                        "multi_match": {
+                            "query": query,
+                            "fields": [
+                                "stem^6",
+                                # "name^5",
+                                "metadata.title^2",
+                                "metadata.author^2",
+                                "parent_path^2",
+                                "outline_titles^1",
+                                # "preview^0.5",
+                            ],
+                            "type": "best_fields",
                         }
                     }
                 ]
@@ -168,76 +176,80 @@ class ElasticsearchClient:
 
         return self.client.search(index=index, query=q, source={'excludes': excludes}, size=size)
 
-    # def knn_search_local_docs(self, index: str, target_field: str, query_vector, k=10, num_candidates=100,
-    #                excludes=None, file_types=None, min_file_size=100):
-    #     if excludes is None:
-    #         excludes = ['embedding']
-    #
-    #     filters = []
-    #     if file_types is not None:
-    #         filters.append({'terms': {'file_type': file_types}})
-    #     if min_file_size is not None and min_file_size >= 0:
-    #         filters.append({'range': {'size': {"gte": min_file_size}}})
-    #
-    #     q = {
-    #         'field': target_field,
-    #         'query_vector': query_vector,
-    #         'k': k,
-    #         'num_candidates': num_candidates
-    #     }
-    #     if filters:
-    #         q['filter'] = filters
-    #
-    #     return self.client.search(index=index, knn=q, source={'excludes': excludes})
-    #
-    # def response_to_results(self, resp: ObjectApiResponse, min_score=0.0, search_type=None):
-    #     result = resp.body
-    #     hits = result.get('hits') or {}
-    #     # print(hits)
-    #     total = hits.get('total') or {}
-    #     total = total.get('value') or 0
-    #     max_score = hits.get('max_score') or 0
-    #
-    #     hits = hits.get('hits') or []
-    #
-    #     converted = []
-    #     for hit in hits:
-    #         es_id = hit['_id']
-    #         score = hit['_score']
-    #         source = hit['_source']
-    #         # source is a dict
-    #         source['id'] = es_id
-    #         source['score'] = score
-    #         source['relevance'] = round(score / max_score, 2)
-    #         source['parent_path'] = str(Path(source['raw_path']).parent)
-    #         source['search_type'] = search_type
-    #         if score >= min_score:
-    #             converted.append(SearchedFileInfo.load_obj(source))
-    #     return SearchedFileResult(total=total,
-    #                               max_score=max_score,
-    #                               num_hits=len(converted),
-    #                               hits=converted)
-    #
-    # def search_local_docs(self, index: str,
-    #                       query: str,
-    #                       excludes=None,
-    #                       file_types=None,
-    #                       min_file_size=100,
-    #                       size=10,
-    #                       min_score=0.0):
-    #     resp = self.search_docs(index, query, excludes, file_types, min_file_size, size=size)
-    #     return self.response_to_results(resp, min_score, search_type='words')
-    #
-    # def search_local_docs_by_embedding(self, index: str,
-    #                       query_vector,
-    #                       excludes=None,
-    #                       file_types=None,
-    #                       min_file_size=100,
-    #                       size=10,
-    #                       min_score=0.0):
-    #     resp = self.knn_search_local_docs(index, 'embedding', query_vector, k=size,
-    #                                       excludes=excludes, file_types=file_types, min_file_size=min_file_size)
-    #     return self.response_to_results(resp, min_score, search_type='embedding')
+    def response_to_results(self, resp: ObjectApiResponse, min_score=0.0, search_type=None):
+        result = resp.body
+        hits = result.get('hits') or {}
+        # print(hits)
+        total = hits.get('total') or {}
+        total = total.get('value') or 0
+        max_score = hits.get('max_score') or 0
+
+        hits = hits.get('hits') or []
+
+        converted = []
+        for hit in hits:
+            # index = hit['_index']
+            es_id = hit['_id']
+            score = hit['_score']
+
+            # copy source dict
+            source = dict(hit.get('_source') or {})
+            source['id'] = es_id
+            source['score'] = score
+            source['relevance_score'] = round(score / max_score, 2) if max_score > 0 else 0.0
+            # source['parent_path'] = str(Path(source['raw_path']).parent)
+            # source['parent_parts']
+            source['search_type'] = search_type
+            if score >= min_score:
+                converted.append(SearchedFileInfo.load_obj(source))
+
+        return SearchedFileResult(total=total,
+                                  max_score=max_score,
+                                  num_hits=len(converted),
+                                  hits=converted)
+
+    def search_local_docs(self, index: str,
+                          query: str,
+                          excludes=None,
+                          file_types=None,
+                          min_file_size: int | None = 100,
+                          size=10,
+                          min_score=0.0):
+        resp = self.search_docs(index, query, excludes, file_types, min_file_size, size=size)
+        return self.response_to_results(resp, min_score, search_type='keyword')
+
+    def search_docs_by_embedding(self, index: str, target_field: str, query_vector, k=10, num_candidates=100,
+                   excludes=None, file_types=None, min_file_size=100):
+        if excludes is None:
+            excludes = ['embedding']
+
+        filters = []
+        if file_types is not None:
+            filters.append({'terms': {'file_type': file_types}})
+        if min_file_size is not None and min_file_size >= 0:
+            filters.append({'range': {'size': {"gte": min_file_size}}})
+
+        q = {
+            'field': target_field,
+            'query_vector': query_vector,
+            'k': k,
+            'num_candidates': num_candidates
+        }
+        if filters:
+            q['filter'] = filters
+
+        return self.client.search(index=index, knn=q, source={'excludes': excludes})
+
+    def search_local_docs_by_embedding(self, index: str,
+                                       query_vector,
+                                       excludes=None,
+                                       file_types=None,
+                                       min_file_size=100,
+                                       size=10,
+                                       min_score=0.0):
+        resp = self.search_docs_by_embedding(index, 'embedding', query_vector, k=size,
+                                             excludes=excludes, file_types=file_types, min_file_size=min_file_size)
+        return self.response_to_results(resp, min_score, search_type='embedding')
 
 
 if __name__ == '__main__':
@@ -266,10 +278,11 @@ if __name__ == '__main__':
     # print(f'index docs: done')
 
     # file_types=['link', 'book', 'video']
-    print(client.search_docs(ES_INDEX, query='爱情', excludes=['edition', 'year']))
+    # print(client.search_docs(ES_INDEX, query='藝術', excludes=['edition', 'year']))
 
-    # searched_files = client.search_local_docs(ES_INDEX, query='小孩 哲学', size=3)
-    # print(searched_files.total, searched_files.num_hits)
-    # for file_info in searched_files.hits:
-    #     print(file_info)
-    #     print()
+    # searched_files = client.search_local_docs(ES_INDEX, query='西方哲学史 讲演', size=5)
+    searched_files = client.search_local_docs(ES_INDEX_LOCAL_FILE, query='历史 地理', size=50)
+    print(searched_files.total, searched_files.num_hits)
+    for file_info in searched_files.hits:
+        print(file_info)
+        print()
