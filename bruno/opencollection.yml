@@ -2,6 +2,18 @@ opencollection: 1.0.0
 
 info:
   name: surfflow
+config:
+  proxy:
+    inherit: false
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+    disabled: true
 bundled: false
 extensions:
   bruno:

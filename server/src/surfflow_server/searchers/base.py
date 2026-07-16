@@ -1,5 +1,6 @@
 # coding=utf-8
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 from archaeo.io.files import is_relative_to_any
 from archaeo.llm_providers import OllamaProvider
@@ -104,6 +105,7 @@ class HybridSearcher(BaseSearcher):
         rrf_k: int = 60,
     ):
         super().__init__("hybrid")
+
         self.searchers = searchers
         self.weights = weights or {}
         self.rrf_k = rrf_k
@@ -113,6 +115,7 @@ class HybridSearcher(BaseSearcher):
         query: str,
         limit: int = 20,
     ) -> list[SearchResult]:
+
         candidates: dict[str, SearchResult] = {}
         fused_scores: dict[str, float] = defaultdict(float)
         matched_sources: dict[str, list[str]] = defaultdict(list)
@@ -154,17 +157,35 @@ class HybridSearcher(BaseSearcher):
 
 
 if __name__ == '__main__':
-    # searcher = MdfindSearcher()
-    # for p in searcher.search('归宿 安妮', limit=5):
+    mdfind_searcher = MdfindSearcher()
+    # for p in mdfind_searcher.search('归宿 安妮', limit=5):
     #     print(p.raw_path)
 
     cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
     embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
     es_emb_searcher = ElasticEmbeddingSearcher(embedder)
-    for p in es_emb_searcher.search('叶嘉莹 唐诗宋词', limit=5):
-        print(p.raw_path)
+    # for p in es_emb_searcher.search('叶嘉莹 唐诗宋词', limit=5):
+    #     print(p.raw_path)
 
     print()
     es_kw_searcher = ElasticKeywordSearcher()
-    for p in es_kw_searcher.search('叶嘉莹 唐诗宋词', limit=5):
+    # for p in es_kw_searcher.search('叶嘉莹 唐诗宋词', limit=5):
+    #     print(p.raw_path)
+
+    searchers = [
+        mdfind_searcher,
+        es_kw_searcher,
+        es_emb_searcher,
+    ]
+    weights = {
+        mdfind_searcher.name: 1.0,
+        es_kw_searcher.name: 1.0,
+        es_emb_searcher.name: 1.0,
+    }
+    hybrid_searcher = HybridSearcher(searchers, weights)
+    for p in hybrid_searcher.search('叶嘉莹 唐诗宋词', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('AI Agents', limit=10):
         print(p.raw_path)

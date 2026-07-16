@@ -1,15 +1,20 @@
 # coding=utf-8
+import subprocess
+
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from archaeo.io.files import get_absolute_path, is_relative_to_any
+from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.handlers.book_handler import extract_book_titles
 from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
 from surfflow_server.handlers.operation_log_handler import save_operation_log
 from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
+from surfflow_server.schemas.local_finder import RevealFileRequest
 
 
 def create_app() -> FastAPI:
@@ -80,6 +85,30 @@ async def get_ff_sync_history_items(req: FirefoxHistorySyncRequest):
 async def log_operation(req: OperationLogRequest):
     log_id = save_operation_log(req)
     return OperationLogResponse(id=log_id)
+
+
+@app.post("/api/v1/files/reveal")
+def reveal_in_finder(req: RevealFileRequest):
+    path = get_absolute_path(req.raw_path)
+
+    if not path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="File does not exist",
+        )
+
+    if not is_relative_to_any(path, SOURCE_DIRS):
+        raise HTTPException(
+            status_code=403,
+            detail='File is outside configured dirs.'
+        )
+
+    subprocess.run(
+        ["open", "-R", str(path)],
+        check=True,
+    )
+
+    return {"ok": True}
 
 
 def run() -> None:
