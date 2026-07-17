@@ -1,0 +1,22 @@
+info:
+  name: file action - archive
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://127.0.0.1:8000/api/v1/files/action
+  body:
+    type: json
+    data: |-
+      {
+        "raw_path": "~/Downloads/to_read/赵林/西方哲学史讲演录 (赵林, 2009).pdf",
+        "action": "archive"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

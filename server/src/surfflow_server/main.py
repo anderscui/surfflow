@@ -14,7 +14,7 @@ from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time,
 from surfflow_server.handlers.operation_log_handler import save_operation_log
 from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
-from surfflow_server.schemas.local_finder import RevealFileRequest
+from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
 
 
 def create_app() -> FastAPI:
@@ -87,8 +87,8 @@ async def log_operation(req: OperationLogRequest):
     return OperationLogResponse(id=log_id)
 
 
-@app.post("/api/v1/files/reveal")
-def reveal_in_finder(req: RevealFileRequest):
+@app.post("/api/v1/files/action")
+def local_file_actions(req: FileActionRequest):
     path = get_absolute_path(req.raw_path)
 
     if not path.exists():
@@ -103,10 +103,15 @@ def reveal_in_finder(req: RevealFileRequest):
             detail='File is outside configured dirs.'
         )
 
-    subprocess.run(
-        ["open", "-R", str(path)],
-        check=True,
-    )
+    match req.action:
+        case FileAction.REVEAL:
+            subprocess.run(["open", "-R", str(path)], check=True)
+        case FileAction.OPEN:
+            subprocess.run(["open", str(path)], check=True)
+        case FileAction.COPY_PATH:
+            return {"ok": True, 'path': str(path)}
+        case FileAction.ARCHIVE:
+            return {"ok": True, 'path': str(path)}
 
     return {"ok": True}
 
