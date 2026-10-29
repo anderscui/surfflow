@@ -40,14 +40,14 @@ def get_prev_metadata(prev_file):
     return prev_metadata
 
 
-def collect_metadata(metadata_file: str):
+def collect_metadata_info(output_meta_key_file: str, metadata_file: str):
     metadata = json_load(metadata_file)
     keys = Counter()
     for meta in metadata.values():
         meta_dict = meta.get('metadata') or {}
         keys.update((k for k, v in meta_dict.items() if v))
     print(keys.most_common())
-    json_dump(keys, '~/Downloads/local_metadata_keys.json')
+    json_dump(keys, output_meta_key_file)
 
 
 # def determine_dup_files(hash_files: defaultdict[list]):
@@ -86,7 +86,7 @@ def embed_files(local_file: str | Path,
     def build_embedding_text(file_info: FileInfo, metadata: LocalFileMetadata | None) -> str:
         return file_info.stem
 
-    files = json_load(local_file)[:100000]
+    files = json_load(local_file)
     file_metadata = json_load(metadata_file)
 
     file_infos: list[FileInfo] = []
@@ -237,21 +237,30 @@ def collect_files(output_file, prev_files=None):
     logger.debug(f'finish all dirs, file count: {len(collected)}, time: {time.time() - start}')
 
 
+def collect_updated_files(output_file, prev_files=None):
+    if prev_files is None:
+        prev_files = {}
+
+
+
+
 if __name__ == '__main__':
     from surfflow_server.config import SURFFLOW_EMB_DB
     from surfflow_server.embedders.embedding_caches import SqliteEmbeddingCache
 
-    # prev_files = get_valid_prev_files('~/Downloads/local_files_260712_1.json')
-    # collect_files('~/Downloads/local_files_260713_1.json', prev_files=prev_files)
+    # prev_files = get_valid_prev_files('~/data/dev/surfflow/local_files_260713_1.json')
+    # collect_files('~/data/dev/surfflow/local_files_261030_1.json', prev_files=prev_files)
 
-    local_file = '~/Downloads/local_files_260713_1.json'
-    metadata_file = '~/Downloads/local_metadata_260713_3.json'
-    # prev_meta = get_prev_metadata(metadata_file)
-    # get_metadata(local_file, '~/Downloads/local_metadata_260713_5.json', prev_metadata=prev_meta)
+    local_file = '~/data/dev/surfflow/local_files_261030_1.json'
+    prev_metadata_file = '~/data/dev/surfflow/local_metadata_260713_3.json'
+    # prev_meta = get_prev_metadata(prev_metadata_file)
+    # get_metadata(local_file, '~/data/dev/surfflow/local_metadata_261030_1.json', prev_metadata=prev_meta)
 
-    # output_embed_file = '~/Downloads/local_embeddings_260714_3.json'
+    # metadata_file = '~/data/dev/surfflow/local_metadata_261030_1.json'
+    # output_embed_file = '~/data/dev/surfflow/local_embeddings_261030_1.json'
     # cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
     # embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
     # embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
 
-    collect_metadata(metadata_file)
+    # out_meta_key_file = '~/data/dev/surfflow/local_metadata_keys_261030_1.json'
+    # collect_metadata_info(out_meta_key_file, metadata_file)

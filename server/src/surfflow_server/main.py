@@ -1,7 +1,4 @@
 # coding=utf-8
-import sys
-print("\n".join(sys.path))
-
 import subprocess
 
 import uvicorn
