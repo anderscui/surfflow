@@ -255,31 +255,35 @@ class ElasticsearchClient:
 if __name__ == '__main__':
     from archaeo.io.files import json_load
     client = ElasticsearchClient()
-    # exists = client.index_exists(ES_INDEX)
+    # exists = client.index_exists(ES_INDEX_LOCAL_FILE)
     # if exists:
-    #     print(f'index {ES_INDEX} is already existing.')
-    #     client.delete_index(ES_INDEX)
-    #     print(f'index {ES_INDEX} deleted')
+    #     print(f'index {ES_INDEX_LOCAL_FILE} is already existing.')
+    #     client.delete_index(ES_INDEX_LOCAL_FILE)
+    #     print(f'index {ES_INDEX_LOCAL_FILE} deleted')
     #
     # mappings = json_load(ES_MAPPINGS_FILE)
-    # client.create_index(ES_INDEX, mappings)
+    # client.create_index(ES_INDEX_LOCAL_FILE, mappings)
     #
     # # index docs
-    # local_file_records = json_load('~/Downloads/local_files_260713_1.json')
-    # local_file_metadata = json_load('~/Downloads/local_metadata_260713_3.json')
-    # local_file_embeddings = json_load('~/Downloads/local_embeddings_260714_2.json')
+    # LOCAL_FILE = f'~/data/dev/surfflow/local_files_261030_2.json'
+    # METADATA_FILE = f'~/data/dev/surfflow/local_metadata_261030_2.json'
+    # EMBED_FILE = f'~/data/dev/surfflow/local_embeddings_261030_2.json'
+    # local_file_records = json_load(LOCAL_FILE)
+    # local_file_metadata = json_load(METADATA_FILE)
+    # local_file_embeddings = json_load(EMBED_FILE)
     # print(len(local_file_records), 'records loaded')
     # print(len(local_file_metadata), 'metadata loaded')
     # print(len(local_file_embeddings), 'embeddings loaded')
     #
     # docs = convert_local_files(local_file_records, local_file_metadata, local_file_embeddings)
     # print(f'{len([1 for doc in docs if doc['embedding'] is not None])} files have embeddings.')
-    # client.bulk_index_documents(ES_INDEX, docs, n_bulk=1000)
+    # client.bulk_index_documents(ES_INDEX_LOCAL_FILE, docs, n_bulk=1000)
     # print(f'index docs: done')
 
     # file_types=['link', 'book', 'video']
     # print(client.search_docs(ES_INDEX, query='藝術', excludes=['edition', 'year']))
 
+    # search docs
     # searched_files = client.search_local_docs(ES_INDEX, query='西方哲学史 讲演', size=5)
     searched_files = client.search_local_docs(ES_INDEX_LOCAL_FILE, query='历史 地理', size=50)
     print(searched_files.total, searched_files.num_hits)

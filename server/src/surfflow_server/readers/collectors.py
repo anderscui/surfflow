@@ -242,25 +242,28 @@ def collect_updated_files(output_file, prev_files=None):
         prev_files = {}
 
 
-
-
 if __name__ == '__main__':
     from surfflow_server.config import SURFFLOW_EMB_DB
     from surfflow_server.embedders.embedding_caches import SqliteEmbeddingCache
 
-    # prev_files = get_valid_prev_files('~/data/dev/surfflow/local_files_260713_1.json')
-    # collect_files('~/data/dev/surfflow/local_files_261030_1.json', prev_files=prev_files)
+    OUTPUT_KEY = '261030_2'
+    PREV_LOCAL_FILE = '~/data/dev/surfflow/local_files_261030_1.json'
+    LOCAL_FILE = f'~/data/dev/surfflow/local_files_{OUTPUT_KEY}.json'
 
-    local_file = '~/data/dev/surfflow/local_files_261030_1.json'
-    prev_metadata_file = '~/data/dev/surfflow/local_metadata_260713_3.json'
-    # prev_meta = get_prev_metadata(prev_metadata_file)
-    # get_metadata(local_file, '~/data/dev/surfflow/local_metadata_261030_1.json', prev_metadata=prev_meta)
+    PREV_METADATA_FILE = '~/data/dev/surfflow/local_metadata_261030_1.json'
+    METADATA_FILE = f'~/data/dev/surfflow/local_metadata_{OUTPUT_KEY}.json'
 
-    # metadata_file = '~/data/dev/surfflow/local_metadata_261030_1.json'
-    # output_embed_file = '~/data/dev/surfflow/local_embeddings_261030_1.json'
-    # cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
-    # embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
-    # embed_files(local_file, metadata_file, output_embed_file, embedder=embedder)
+    OUTPUT_EMBED_FILE = f'~/data/dev/surfflow/local_embeddings_{OUTPUT_KEY}.json'
+    OUT_META_KEY_FILE = f'~/data/dev/surfflow/local_metadata_keys_{OUTPUT_KEY}.json'
 
-    # out_meta_key_file = '~/data/dev/surfflow/local_metadata_keys_261030_1.json'
-    # collect_metadata_info(out_meta_key_file, metadata_file)
+    prev_files = get_valid_prev_files(PREV_LOCAL_FILE)
+    collect_files(LOCAL_FILE, prev_files=prev_files)
+
+    prev_meta = get_prev_metadata(PREV_METADATA_FILE)
+    get_metadata(LOCAL_FILE, METADATA_FILE, prev_metadata=prev_meta)
+
+    cache = SqliteEmbeddingCache(SURFFLOW_EMB_DB)
+    embedder = LlmEmbedder(OllamaProvider('qwen3-embedding:8b'), cache)
+    embed_files(LOCAL_FILE, METADATA_FILE, OUTPUT_EMBED_FILE, embedder=embedder)
+
+    collect_metadata_info(OUT_META_KEY_FILE, METADATA_FILE)
