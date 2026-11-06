@@ -2,3 +2,4 @@
 from .books import ExtractBookRequest
 from .firefox import FirefoxHistorySyncRequest, FirefoxHistorySyncResponse, FirefoxHistoryItem
 from .firefox import OperationLogRequest, OperationLogResponse
+from .firefox import FirefoxDownload, FirefoxDownloadBatch, FirefoxDownloadSyncResult

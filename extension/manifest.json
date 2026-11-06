@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "SurfFlow",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stream web data seamlessly into your local repo.",
-  "permissions": ["activeTab", "tabs", "menus", "scripting", "history"],
+  "permissions": ["activeTab", "tabs", "menus", "scripting", "history", "downloads", "storage"],
   "host_permissions": [
     "*://*.douban.com/*",
 

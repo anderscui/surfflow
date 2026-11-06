@@ -1,5 +1,5 @@
 # coding=utf-8
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class FirefoxHistoryItem(BaseModel):
@@ -35,3 +35,34 @@ class OperationLogRequest(BaseModel):
 
 class OperationLogResponse(BaseModel):
     id: int
+
+
+class FirefoxDownload(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    source_id: str = Field(min_length=1)
+    download_id: int = Field(alias='id')
+
+    url: str
+    final_url: str | None = Field(default=None, alias='finalUrl')
+    referrer: str | None = None
+    filename: str | None = None
+    mime: str | None = None
+
+    start_time: str | None = Field(default=None, alias='startTime')
+    end_time: str | None = Field(default=None, alias='endTime')
+
+    state: str
+    total_bytes: int | None = Field(default=None, alias='totalBytes')
+    bytes_received: int | None = Field(default=None, alias='bytesReceived')
+    exists_on_disk: bool | None = Field(default=None, alias='exists')
+    error: str | None = None
+
+
+class FirefoxDownloadBatch(BaseModel):
+    items: list[FirefoxDownload]
+
+
+class FirefoxDownloadSyncResult(BaseModel):
+    count: int
+

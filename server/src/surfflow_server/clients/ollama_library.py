@@ -12,7 +12,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 LIBRARY_URL = 'https://ollama.com/library?sort=newest'
-OUTPUT_FILE = Path('ollama_models.json')
+OUTPUT_FILE = Path('../data/ollama_models.json')
 
 logger = logging.getLogger(__name__)
 

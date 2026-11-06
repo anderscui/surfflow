@@ -113,7 +113,8 @@ def local_file_actions(req: FileActionRequest):
         case FileAction.ARCHIVE:
             return {"ok": True, 'path': str(path)}
 
-    return {"ok": True}
+    # unknown action
+    return {"ok": False}
 
 
 def run() -> None:

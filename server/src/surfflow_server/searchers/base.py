@@ -193,3 +193,19 @@ if __name__ == '__main__':
     print()
     for p in hybrid_searcher.search('中国古典文学', limit=10):
         print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('深度学习', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('大语言模型', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('初等数学', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('RAG for Production', limit=10):
+        print(p.raw_path)

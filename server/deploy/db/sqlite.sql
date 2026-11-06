@@ -50,3 +50,27 @@ ON operation_log(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_operation_log_action
 ON operation_log(action);
+
+CREATE TABLE IF NOT EXISTS ff_downloads
+(
+    source_id      TEXT    NOT NULL,
+    download_id    INTEGER NOT NULL,
+    url            TEXT    NOT NULL,
+    final_url      TEXT,
+    referrer       TEXT,
+    filename       TEXT,
+    mime           TEXT,
+    start_time     TEXT,
+    end_time       TEXT,
+    state          TEXT    NOT NULL,
+    total_bytes    INTEGER,
+    bytes_received INTEGER,
+    exists_on_disk INTEGER,
+    error          TEXT,
+    updated_at     TEXT    NOT NULL
+        DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    PRIMARY KEY (source_id, download_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_downloads_start_time ON ff_downloads (start_time);
+CREATE INDEX IF NOT EXISTS idx_downloads_filename ON ff_downloads (filename);
