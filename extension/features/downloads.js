@@ -1,5 +1,5 @@
 const API_BASE = 'http://127.0.0.1:8000/api/v1/firefox/downloads';
-const API_KEY = 'replace-with-a-random-secret';
+const API_KEY = 'a-random-secret';
 
 const SYNC_DAYS = 30;
 const BATCH_SIZE = 200;
@@ -100,8 +100,8 @@ export async function syncDownloads(days = SYNC_DAYS) {
 
   const items = await browser.downloads.search(query);
 
-  console.log(`${items}`);
   console.log(`Syncing ${items.length} downloads`);
+  console.log(JSON.stringify(items.slice(0, 1), null, 2));
 
   for (let i = 0; i < items.length; i += BATCH_SIZE) {
     const batch = items.slice(i, i + BATCH_SIZE);
@@ -121,6 +121,7 @@ async function refreshDownload(id) {
 }
 
 function handleDownloadCreated(item) {
+  console.log(`A download item created: ${JSON.stringify(item, null, 2)}`);
   enqueue(() => saveDownload(item)).catch(console.error);
 }
 
@@ -148,5 +149,5 @@ export function initDownloads() {
   }).catch(console.error);
 
   // Optional manual full sync through extension console:
-  enqueue(() => syncDownloads(null));
+  // enqueue(() => syncDownloads(null));
 }
