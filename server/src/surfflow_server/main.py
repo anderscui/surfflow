@@ -2,7 +2,7 @@
 import subprocess
 
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,9 +10,11 @@ from fastapi.templating import Jinja2Templates
 from archaeo.io.files import get_absolute_path, is_relative_to_any
 from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.handlers.book_handler import extract_book_titles
+from surfflow_server.handlers.ff_download_handler import save_ff_downloads, list_ff_downloads
 from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
 from surfflow_server.handlers.operation_log_handler import save_operation_log
 from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
+from surfflow_server.schemas import FirefoxDownloadSyncResult, FirefoxDownloadBatch, FirefoxDownload
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
 
@@ -76,6 +78,37 @@ async def get_ff_sync_history_items(req: FirefoxHistorySyncRequest):
     for item in req.items[:5]:
         print(item)
     return save_ff_history_sync(req)
+
+
+@app.post(
+    '/api/v1/firefox/downloads',
+    response_model=FirefoxDownloadSyncResult
+)
+def save_download(record: FirefoxDownload):
+    count = save_ff_downloads([record])
+    return FirefoxDownloadSyncResult(count=count)
+
+
+@app.post(
+    '/api/v1/firefox/downloads/batch',
+    response_model=FirefoxDownloadSyncResult
+)
+def save_download_batch(batch: FirefoxDownloadBatch):
+    count = save_ff_downloads(batch.items)
+    return FirefoxDownloadSyncResult(count=count)
+
+
+@app.get('/api/v1/firefox/downloads')
+def get_downloads(
+    source_id: str | None = None,
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
+    return list_ff_downloads(
+        source_id=source_id,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @app.post(
