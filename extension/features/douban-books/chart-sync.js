@@ -80,7 +80,7 @@ async function runChartSync() {
 
 export function initDoubanChart() {
   browser.runtime.onMessage.addListener(message => {
-    if (message?.type !== 'douban-chart-sync') return undefined;
+    if (message?.type !== 'douban-book-chart-sync') return undefined;
     if (running) return Promise.resolve({ status: 'running', message: '同步正在进行' });
     running = true;
     return runChartSync()

@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from archaeo.io.files import get_absolute_path, is_relative_to_any
-from surfflow_server.config import SOURCE_DIRS
+from surfflow_server.config import SOURCE_DIRS, logger
 from surfflow_server.handlers.book_handler import extract_book_titles
 from surfflow_server.handlers.douban_book_handler import get_chart_sync_status, save_book_chart, save_book_latest_batch
 from surfflow_server.handlers.ff_download_handler import save_ff_downloads, list_ff_downloads
@@ -80,9 +80,9 @@ async def get_ff_last_hist_sync_time():
 
 @app.post("/api/v1/firefox/history/sync")
 async def get_ff_sync_history_items(req: FirefoxHistorySyncRequest):
-    print(req.start_time, req.end_time, f'{len(req.items)} items:')
+    logger.debug(f'{req.start_time} -> {req.end_time}, {len(req.items)} items:')
     for item in req.items[:5]:
-        print(item)
+        logger.debug(item)
     return save_ff_history_sync(req)
 
 
@@ -143,9 +143,9 @@ def save_db_book_chart_batch(batch: ChartBatch):
     if min(ranks) != 1 or sorted(ranks) != list(range(1, max(ranks) + 1)):
         raise HTTPException(status_code=422, detail='Incomplete or non-contiguous ranking')
 
-    print(batch)
+    logger.debug(batch.books[:5])
     result = save_book_chart(batch)
-    print(result)
+    logger.debug(result)
     return result
 
 
@@ -155,9 +155,9 @@ def save_db_book_latest_batch(batch: LatestBatch):
     if len(ids) != len(set(ids)):
         raise HTTPException(status_code=422, detail='Repeated Douban book IDs in batch')
 
-    print(batch.books[:5])
+    logger.debug(batch.books[:5])
     result = save_book_latest_batch(batch)
-    print(result)
+    logger.debug(result)
     return result
 
 

@@ -321,24 +321,6 @@ const chartButton = document.querySelector('#sync-chart');
 const latestButton = document.querySelector('#sync-latest');
 const status = document.querySelector('#status');
 
-chartButton.addEventListener('click', async () => {
-  chartButton.disabled = true;
-  status.textContent = '正在读取榜单并同步到本地数据库…';
-  try {
-    const result = await browser.runtime.sendMessage({ type: 'douban-chart-sync' });
-    if (result.status === 'error') throw new Error(result.message);
-    if (result.status === 'skipped' || result.status === 'running') {
-      status.textContent = `${result.chart_month || ''} ${result.message}`;
-    } else {
-      status.textContent = `${result.chart_month}：同步完成\n读取 ${result.pages_read} 页，入库 ${result.books_inserted} 本。`;
-    }
-  } catch (error) {
-    status.textContent = `同步失败：${error.message}`;
-  } finally {
-    chartButton.disabled = false;
-  }
-});
-
 async function run(type) {
   chartButton.disabled = true;
   latestButton.disabled = true;
@@ -362,5 +344,6 @@ async function run(type) {
     latestButton.disabled = false;
   }
 }
-// chartButton.addEventListener('click', () => run('douban-chart-sync'));
+
+chartButton.addEventListener('click', () => run('douban-book-chart-sync'));
 latestButton.addEventListener('click', () => run('douban-book-latest-sync'));
