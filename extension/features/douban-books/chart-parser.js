@@ -47,8 +47,8 @@ function parseBook(li, baseUrl) {
   const infoNode = li.querySelector('p.subject-abstract, .subject-abstract');
   const info = parsePublicationInfo(infoNode?.textContent || '');
   const rank = findRank(li);
-  const ratingNode = li.querySelector('.rating_nums, .rating-num, .rating .rating_nums');
-  const rating = firstNumber(ratingNode?.textContent);
+  const ratingText = li.querySelector('.subject-rating .font-small')?.textContent.trim();
+  const rating = ratingText ? Number(ratingText) : null;
   const text = normalize(li.textContent);
   const ratingCount = text.match(/\(\s*([\d,]+)\s*人评价\s*\)/);
   const months = text.match(/连续上榜\s*(\d+)\s*个月/);
@@ -104,8 +104,8 @@ export function parseChartPage(html, pageUrl) {
   if (entries.length && books.length !== entries.length) {
     throw new Error(`图书解析不完整：列表 ${entries.length} 条，解析 ${books.length} 条`);
   }
-  const pagination = [...doc.querySelectorAll('a[href*="p="]')]
-    .filter(a => new URL(a.href).pathname === '/chart')
+  const pagination = [...doc.querySelectorAll('.paginator a[href]')]
+    .map(a => new URL(a.getAttribute('href'), pageUrl))
     .map(a => Number(new URL(a.href).searchParams.get('p')))
     .filter(n => Number.isInteger(n) && n > 0);
 

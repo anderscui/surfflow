@@ -24,13 +24,16 @@ async function postJson(url, body) {
 async function fetchChart(url) {
   const response = await fetch(url, { credentials: 'include' });
   if (!response.ok) throw new Error(`豆瓣 ${response.status}: ${url}`);
-  return parseChartPage(await response.text(), response.url);
+  const obj = parseChartPage(await response.text(), response.url);
+  // console.log(JSON.stringify(obj));
+  return obj;
 }
 
 function buildPageUrl(page, updatedAt) {
   const url = new URL(CHART_URL);
   if (page > 1) url.searchParams.set('p', String(page));
   if (updatedAt) url.searchParams.set('updated_at', updatedAt);
+  console.log(url.href);
   return url.href;
 }
 
