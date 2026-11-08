@@ -1,8 +1,9 @@
 # coding=utf-8
+import re
 import subprocess
 
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException, Query, Header
+from fastapi import FastAPI, Request, HTTPException, Query, Header, APIRouter, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,13 +11,16 @@ from fastapi.templating import Jinja2Templates
 from archaeo.io.files import get_absolute_path, is_relative_to_any
 from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.handlers.book_handler import extract_book_titles
+from surfflow_server.handlers.douban_book_handler import get_chart_sync_status, save_book_chart
 from surfflow_server.handlers.ff_download_handler import save_ff_downloads, list_ff_downloads
 from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
 from surfflow_server.handlers.operation_log_handler import save_operation_log
-from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest
+from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest, ChartBatch
 from surfflow_server.schemas import FirefoxDownloadSyncResult, FirefoxDownloadBatch, FirefoxDownload
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
+
+router = APIRouter(prefix='/api/v1/douban/book_chart', tags=['douban-book-chart'])
 
 
 def create_app() -> FastAPI:
@@ -44,6 +48,7 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+app.include_router(router)
 templates = Jinja2Templates(directory='templates')
 app.mount(
     '/static',
@@ -118,6 +123,29 @@ def get_downloads(
 async def log_operation(req: OperationLogRequest):
     log_id = save_operation_log(req)
     return OperationLogResponse(id=log_id)
+
+
+@router.get("/status")
+def douban_book_chart_status(month: str):
+    if not re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', month):
+        raise HTTPException(status_code=422, detail='Invalid chart month')
+    status = get_chart_sync_status(month)
+    return status
+
+
+@router.post('/batch')
+def save_chart(batch: ChartBatch):
+    ids = [book.id for book in batch.books]
+    ranks = [book.rank for book in batch.books]
+    if len(set(ids)) != len(ids) or len(set(ranks)) != len(ranks):
+        raise HTTPException(status_code=422, detail='Duplicate IDs or ranks')
+    if min(ranks) != 1 or sorted(ranks) != list(range(1, max(ranks) + 1)):
+        raise HTTPException(status_code=422, detail='Incomplete or non-contiguous ranking')
+
+    print(batch)
+    result = save_book_chart(batch)
+    print(result)
+    return result
 
 
 @app.post("/api/v1/files/action")

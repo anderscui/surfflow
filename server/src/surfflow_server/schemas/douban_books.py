@@ -5,6 +5,12 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 
+class ChartBookSyncStatus(BaseModel):
+    chart_month: str
+    synced: bool
+    books_count: int
+
+
 class ChartBook(BaseModel):
     id: str
     url: str

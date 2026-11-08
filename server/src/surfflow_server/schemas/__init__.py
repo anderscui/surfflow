@@ -1,5 +1,6 @@
 # coding=utf-8
 from .books import ExtractBookRequest
+from .douban_books import ChartBookSyncStatus, ChartBook, ChartBatch
 from .firefox import FirefoxHistorySyncRequest, FirefoxHistorySyncResponse, FirefoxHistoryItem
 from .firefox import OperationLogRequest, OperationLogResponse
 from .firefox import FirefoxDownload, FirefoxDownloadBatch, FirefoxDownloadSyncResult

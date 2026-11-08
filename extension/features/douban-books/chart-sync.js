@@ -1,7 +1,7 @@
 import { parseChartPage } from './chart-parser.js';
 
 const CHART_URL = 'https://book.douban.com/chart?subcat=all';
-const API_URL = 'http://127.0.0.1:8000/api/v1/douban/chart';
+const API_URL = 'http://127.0.0.1:8000/api/v1/douban/book_chart';
 const API_KEY = 'a-random-secret'; // 与现有 FastAPI 密钥保持一致
 const MAX_PAGES = 5;
 let running = false;
