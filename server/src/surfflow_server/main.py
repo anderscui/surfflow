@@ -20,8 +20,8 @@ from surfflow_server.schemas import FirefoxDownloadSyncResult, FirefoxDownloadBa
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
 
-router = APIRouter(prefix='/api/v1/douban/book_chart', tags=['douban-book-chart'])
-
+router_db_book_chart = APIRouter(prefix='/api/v1/douban/book_chart', tags=['douban-book-chart'])
+router_db_book_latest = APIRouter(prefix='/api/v1/douban/book_latest', tags=['douban-book-latest'])
 
 def create_app() -> FastAPI:
     app = FastAPI(title="SurfFlow Server", version="0.1.0")
@@ -48,7 +48,8 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-app.include_router(router)
+app.include_router(router_db_book_chart)
+app.include_router(router_db_book_latest)
 templates = Jinja2Templates(directory='templates')
 app.mount(
     '/static',
@@ -125,7 +126,7 @@ async def log_operation(req: OperationLogRequest):
     return OperationLogResponse(id=log_id)
 
 
-@router.get("/status")
+@router_db_book_chart.get("/status")
 def douban_book_chart_status(month: str):
     if not re.fullmatch(r'\d{4}-(0[1-9]|1[0-2])', month):
         raise HTTPException(status_code=422, detail='Invalid chart month')
@@ -133,7 +134,7 @@ def douban_book_chart_status(month: str):
     return status
 
 
-@router.post('/batch')
+@router_db_book_chart.post('/batch')
 def save_chart(batch: ChartBatch):
     ids = [book.id for book in batch.books]
     ranks = [book.rank for book in batch.books]

@@ -317,11 +317,12 @@ document.getElementById("searchBooks").addEventListener("click", searchBooks);
 document.getElementById("searchMovies").addEventListener("click", searchMovies);
 
 // douban book discovery
-const button = document.querySelector('#sync-chart');
+const chartButton = document.querySelector('#sync-chart');
+const latestButton = document.querySelector('#sync-latest');
 const status = document.querySelector('#status');
 
-button.addEventListener('click', async () => {
-  button.disabled = true;
+chartButton.addEventListener('click', async () => {
+  chartButton.disabled = true;
   status.textContent = '正在读取榜单并同步到本地数据库…';
   try {
     const result = await browser.runtime.sendMessage({ type: 'douban-chart-sync' });
@@ -334,6 +335,32 @@ button.addEventListener('click', async () => {
   } catch (error) {
     status.textContent = `同步失败：${error.message}`;
   } finally {
-    button.disabled = false;
+    chartButton.disabled = false;
   }
 });
+
+async function run(type) {
+  chartButton.disabled = true;
+  latestButton.disabled = true;
+  status.textContent = '同步中，请保持本地 FastAPI 服务运行…';
+  try {
+    const result = await browser.runtime.sendMessage({ type });
+    if (!result || result.status === 'error') {
+      throw new Error(result?.message || '后台未返回同步结果');
+    }
+    if (result.status === 'skipped' || result.status === 'running') {
+      status.textContent = result.message || result.status;
+    } else if (type === 'douban-book-latest-sync') {
+      status.textContent = `新书速递同步完成\n读取 ${result.pages_read} 页，发现 ${result.books_found} 本，新增 ${result.books_inserted} 本。`;
+    } else {
+      status.textContent = `${result.chart_month} 热门榜同步完成\n读取 ${result.pages_read} 页，入库 ${result.books_inserted} 本。`;
+    }
+  } catch (error) {
+    status.textContent = `同步失败：${error.message}`;
+  } finally {
+    chartButton.disabled = false;
+    latestButton.disabled = false;
+  }
+}
+// chartButton.addEventListener('click', () => run('douban-chart-sync'));
+latestButton.addEventListener('click', () => run('douban-book-latest-sync'));

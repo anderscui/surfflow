@@ -57,3 +57,33 @@ class ChartBatch(BaseModel):
     def valid_date(cls, value: str):
         datetime.strptime(value, '%Y-%m-%d')
         return value
+
+
+class LatestBook(BaseModel):
+    id: str
+    url: str
+    title: str = Field(min_length=1)
+    authors: str | None = None
+    pub_date: str | None = None
+    publisher: str | None = None
+    list_price: str | None = None
+    binding: str | None = None
+    raw_info: str | None = None
+    rating: float | None = Field(default=None, ge=0, le=10)
+    rating_count: int | None = Field(default=None, ge=0)
+    paper_price: float | None = Field(default=None, ge=0)
+    paper_url: str | None = None
+    ebook_url: str | None = None
+
+    @field_validator('id')
+    @classmethod
+    def valid_id(cls, value: str) -> str:
+        if not re.fullmatch(r'\d+', value):
+            raise ValueError('Book ID must consist of digits')
+        return value
+
+
+class LatestBatch(BaseModel):
+    source_url: str
+    pages_read: int = Field(ge=1, le=20)
+    books: list[LatestBook] = Field(min_length=1, max_length=500)

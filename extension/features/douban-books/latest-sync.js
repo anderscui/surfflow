@@ -69,7 +69,7 @@ export async function syncLatestBooks() {
 export function initDoubanLatest() {
   // Register synchronously during background initialization.
   browser.runtime.onMessage.addListener(message => {
-    if (message?.type !== 'douban-latest-sync') return undefined;
+    if (message?.type !== 'douban-book-latest-sync') return undefined;
     if (running) return Promise.resolve({ status: 'running', message: '新书速递正在同步' });
     running = true;
     return syncLatestBooks()
