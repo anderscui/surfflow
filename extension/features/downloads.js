@@ -7,6 +7,15 @@ const BATCH_SIZE = 200;
 let sourceId = null;
 let taskQueue = Promise.resolve();
 
+// const all = await browser.downloads.search({});
+// const sorted = await browser.downloads.search({
+//   orderBy: ['-startTime']
+// });
+//
+// console.log('All downloads:', all.length);
+// console.log('Sorted downloads:', sorted.length);
+// console.log('Oldest:', sorted.at(-1)?.startTime);
+
 
 // Serializes sync and incremental updates.
 function enqueue(task) {
@@ -101,7 +110,7 @@ export async function syncDownloads(days = SYNC_DAYS) {
   const items = await browser.downloads.search(query);
 
   console.log(`Syncing ${items.length} downloads`);
-  console.log(JSON.stringify(items.slice(0, 1), null, 2));
+  // console.log(JSON.stringify(items.slice(0, 1), null, 2));
 
   for (let i = 0; i < items.length; i += BATCH_SIZE) {
     const batch = items.slice(i, i + BATCH_SIZE);

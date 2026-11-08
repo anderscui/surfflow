@@ -74,3 +74,46 @@ CREATE TABLE IF NOT EXISTS ff_downloads
 
 CREATE INDEX IF NOT EXISTS idx_downloads_start_time ON ff_downloads (start_time);
 CREATE INDEX IF NOT EXISTS idx_downloads_filename ON ff_downloads (filename);
+
+CREATE TABLE IF NOT EXISTS douban_books
+(
+    id         TEXT PRIMARY KEY,
+    url        TEXT NOT NULL,
+    title      TEXT NOT NULL,
+    authors    TEXT,
+    pub_date   TEXT,
+    publisher  TEXT,
+    list_price TEXT,
+    binding    TEXT,
+    raw_info   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS douban_book_chart_snapshots
+(
+    chart_month TEXT PRIMARY KEY,
+    updated_at  TEXT,
+    source_url  TEXT    NOT NULL,
+    fetched_at  TEXT    NOT NULL,
+    pages_read  INTEGER NOT NULL,
+    books_count INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS douban_book_chart_entries
+(
+    chart_month     TEXT    NOT NULL,
+    book_id         TEXT    NOT NULL,
+    rank            INTEGER NOT NULL,
+    subcat          TEXT,
+    months_on_chart INTEGER,
+    rating          REAL,
+    rating_count    INTEGER,
+    paper_price     REAL,
+    paper_url       TEXT,
+    ebook_url       TEXT,
+    PRIMARY KEY (chart_month, book_id),
+    UNIQUE (chart_month, rank),
+    FOREIGN KEY (chart_month) REFERENCES douban_book_chart_snapshots (chart_month),
+    FOREIGN KEY (book_id) REFERENCES douban_books (id)
+);
+CREATE INDEX IF NOT EXISTS idx_douban_book_chart_entries_book
+    ON douban_book_chart_entries (book_id);

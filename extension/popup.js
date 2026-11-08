@@ -315,3 +315,25 @@ document.getElementById("extractBooks").addEventListener("click", extractBooks);
 
 document.getElementById("searchBooks").addEventListener("click", searchBooks);
 document.getElementById("searchMovies").addEventListener("click", searchMovies);
+
+// douban book discovery
+const button = document.querySelector('#sync-chart');
+const status = document.querySelector('#status');
+
+button.addEventListener('click', async () => {
+  button.disabled = true;
+  status.textContent = '正在读取榜单并同步到本地数据库…';
+  try {
+    const result = await browser.runtime.sendMessage({ type: 'douban-chart-sync' });
+    if (result.status === 'error') throw new Error(result.message);
+    if (result.status === 'skipped' || result.status === 'running') {
+      status.textContent = `${result.chart_month || ''} ${result.message}`;
+    } else {
+      status.textContent = `${result.chart_month}：同步完成\n读取 ${result.pages_read} 页，入库 ${result.books_inserted} 本。`;
+    }
+  } catch (error) {
+    status.textContent = `同步失败：${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+});
