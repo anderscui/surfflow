@@ -30,10 +30,14 @@ function parsePublicationInfo(text) {
 }
 
 function parseBook(li, pageUrl) {
-  const link = li.querySelector('h2 a[href*="/subject/"], a[href*="/subject/"]');
-  const url = absoluteUrl(link?.getAttribute('href'), pageUrl);
+  const titleLink = li.querySelector('h2 a[href*="/subject/"]');
+  const bookLink = titleLink ?? li.querySelector('a[href*="/subject/"]');
+
+  const url = absoluteUrl(bookLink?.getAttribute('href'), pageUrl);
   const id = url?.match(/\/subject\/(\d+)\/?/)?.[1];
-  const title = clean(link?.textContent);
+  const title = clean(titleLink?.textContent);
+
+  console.log(`id: ${id}, title: ${title}`);
   if (!id || !title) throw new Error(`无法解析图书的 ID 或书名：${clean(li.textContent).slice(0, 80)}`);
 
   const ratingText = clean(li.querySelector('.subject-rating .font-small')?.textContent);

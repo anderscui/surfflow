@@ -11,11 +11,11 @@ from fastapi.templating import Jinja2Templates
 from archaeo.io.files import get_absolute_path, is_relative_to_any
 from surfflow_server.config import SOURCE_DIRS
 from surfflow_server.handlers.book_handler import extract_book_titles
-from surfflow_server.handlers.douban_book_handler import get_chart_sync_status, save_book_chart
+from surfflow_server.handlers.douban_book_handler import get_chart_sync_status, save_book_chart, save_book_latest_batch
 from surfflow_server.handlers.ff_download_handler import save_ff_downloads, list_ff_downloads
 from surfflow_server.handlers.ff_history_handler import get_last_hist_sync_time, save_ff_history_sync
 from surfflow_server.handlers.operation_log_handler import save_operation_log
-from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest, ChartBatch
+from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncRequest, ChartBatch, LatestBatch
 from surfflow_server.schemas import FirefoxDownloadSyncResult, FirefoxDownloadBatch, FirefoxDownload
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
@@ -135,7 +135,7 @@ def douban_book_chart_status(month: str):
 
 
 @router_db_book_chart.post('/batch')
-def save_chart(batch: ChartBatch):
+def save_db_book_chart_batch(batch: ChartBatch):
     ids = [book.id for book in batch.books]
     ranks = [book.rank for book in batch.books]
     if len(set(ids)) != len(ids) or len(set(ranks)) != len(ranks):
@@ -145,6 +145,18 @@ def save_chart(batch: ChartBatch):
 
     print(batch)
     result = save_book_chart(batch)
+    print(result)
+    return result
+
+
+@router_db_book_latest.post('/batch')
+def save_db_book_latest_batch(batch: LatestBatch):
+    ids = [book.id for book in batch.books]
+    if len(ids) != len(set(ids)):
+        raise HTTPException(status_code=422, detail='Repeated Douban book IDs in batch')
+
+    print(batch.books[:5])
+    result = save_book_latest_batch(batch)
     print(result)
     return result
 
