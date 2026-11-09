@@ -77,7 +77,8 @@
           name: item.name ?? item.filename ?? item.file_name ?? (path ? path.split(/[\\/]/).pop() : '') ?? '',
           path,
           type: item.extension ?? item.ext ?? item.file_type ?? '',
-          score: item.score ?? item.similarity ?? null,
+          score: item.score ?? null,
+          source: item.source ?? '',
         };
       });
     }
@@ -142,9 +143,14 @@
 
         const extras = document.createElement('div');
         extras.className = 'file-extras';
+
         const tags = [];
         if (file.type) tags.push(String(file.type).replace(/^\./, '').toUpperCase());
         if (typeof file.score === 'number') tags.push(`Score ${file.score.toFixed(3)}`);
+        if (file.source) {
+          tags.push(`Sources: ${file.source}`);
+        }
+
         extras.textContent = tags.join(' · ');
 
         const actions = createFileActions(file);

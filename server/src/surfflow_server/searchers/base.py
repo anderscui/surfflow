@@ -153,6 +153,12 @@ class HybridSearcher(BaseSearcher):
             result.source = ",".join(matched_sources[raw_path])
             final_results.append(result)
 
+        if final_results:
+            max_score = final_results[0].score
+            if max_score is not None and max_score > 0:
+                for result in final_results:
+                    result.score /= max_score
+
         return final_results
 
 
@@ -221,5 +227,5 @@ if __name__ == '__main__':
 
     # 数学：它的内容、方法和意义
     print()
-    for p in hybrid_searcher.search('西游记', limit=10):
+    for p in hybrid_searcher.search('文学是什么', limit=10):
         print(p.raw_path)
