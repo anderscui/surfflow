@@ -103,7 +103,24 @@
           button.classList.add('archive');
         }
 
-        button.addEventListener('click', () => handleFileAction(action, file));
+        button.addEventListener('click', async () => {
+          if (action === 'copy_path') {
+            try {
+              await navigator.clipboard.writeText(file.path);
+
+              button.textContent = 'Copied ✓';
+              setTimeout(() => {
+                button.textContent = 'Copy Path';
+              }, 1500);
+            } catch (error) {
+              console.error('Copy path failed:', error);
+              button.textContent = 'Copy failed';
+            }
+            return;
+          }
+
+          await handleFileAction(action, file);
+        });
         actions.appendChild(button);
       }
 
@@ -140,16 +157,6 @@
     const FILE_ACTION_API = '/api/v1/files/action';
 
     async function handleFileAction(action, file) {
-      if (action === 'copy_path') {
-        try {
-          await navigator.clipboard.writeText(file.path);
-        } catch (error) {
-          console.error('Copy path failed:', error);
-          alert(`复制失败：${error.message}`);
-        }
-        return;
-      }
-
       if (action === 'archive') {
         if (!confirm(`确定归档这个文件？\n${file.path}`)) {
           return;
