@@ -19,6 +19,7 @@ from surfflow_server.schemas import ExtractBookRequest, FirefoxHistorySyncReques
 from surfflow_server.schemas import FirefoxDownloadSyncResult, FirefoxDownloadBatch, FirefoxDownload
 from surfflow_server.schemas import OperationLogResponse, OperationLogRequest
 from surfflow_server.schemas.local_finder import FileActionRequest, FileAction
+from surfflow_server.searchers import get_default_local_file_searcher
 
 router_db_book_chart = APIRouter(prefix='/api/v1/douban/book_chart', tags=['douban-book-chart'])
 router_db_book_latest = APIRouter(prefix='/api/v1/douban/book_latest', tags=['douban-book-latest'])
@@ -159,6 +160,25 @@ def save_db_book_latest_batch(batch: LatestBatch):
     result = save_book_latest_batch(batch)
     logger.debug(result)
     return result
+
+
+@app.get('/search')
+def search_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name='search.html',
+        context={}
+    )
+
+
+@app.get("/api/v1/files/search")
+def search_file(q: str, n: int = 10):
+    # 数学：它的内容、方法和意义
+    print(n, q)
+    searcher = get_default_local_file_searcher()
+    files = searcher.search(q, limit=n)
+    print(files)
+    return files
 
 
 @app.post("/api/v1/files/action")

@@ -156,7 +156,7 @@ class HybridSearcher(BaseSearcher):
         return final_results
 
 
-if __name__ == '__main__':
+def get_default_local_file_searcher():
     mdfind_searcher = MdfindSearcher()
     # for p in mdfind_searcher.search('归宿 安妮', limit=5):
     #     print(p.raw_path)
@@ -182,7 +182,12 @@ if __name__ == '__main__':
         es_kw_searcher.name: 1.0,
         es_emb_searcher.name: 1.0,
     }
-    hybrid_searcher = HybridSearcher(searchers, weights)
+    file_searcher = HybridSearcher(searchers, weights)
+    return file_searcher
+
+
+if __name__ == '__main__':
+    hybrid_searcher = get_default_local_file_searcher()
     for p in hybrid_searcher.search('叶嘉莹 唐诗宋词', limit=10):
         print(p.raw_path)
 
@@ -208,4 +213,12 @@ if __name__ == '__main__':
 
     print()
     for p in hybrid_searcher.search('RAG for Production', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('金瓶梅', limit=10):
+        print(p.raw_path)
+
+    print()
+    for p in hybrid_searcher.search('西游记', limit=10):
         print(p.raw_path)

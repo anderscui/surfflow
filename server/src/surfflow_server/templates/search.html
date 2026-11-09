@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SurfFlow · Search</title>
+  <link rel="stylesheet" href="/static/css/pico.min.css">
+  <style>
+    main.container { max-width: 940px; padding-top: 3rem; }
+    .brand { margin-bottom: 1.5rem; }
+    .brand h1 { font-size: 1.55rem; margin-bottom: .3rem; }
+    .brand small { color: var(--pico-muted-color); }
+    .search-form { display: flex; gap: .65rem; margin-bottom: 1.1rem; }
+    .search-form input { flex: 1; min-width: 0; margin-bottom: 0; }
+    .search-form button { width: auto; white-space: nowrap; margin-bottom: 0; }
+    .meta { color: var(--pico-muted-color); font-size: .85rem; margin: 1.15rem 0 .45rem; }
+    .results { list-style: none; padding: 0; margin: 0; }
+    .results li { padding: .85rem 0; margin: 0; border-bottom: 1px solid var(--pico-muted-border-color); }
+    .file-name { font-size: .99rem; font-weight: 600; overflow-wrap: anywhere; }
+    .file-path { margin-top: .2rem; font-size: .78rem; color: var(--pico-muted-color); overflow-wrap: anywhere; }
+    .file-extras { margin-top: .25rem; font-size: .75rem; color: var(--pico-muted-color); }
+    .file-extras:empty { display: none; }
+    .hint { margin-top: 1rem; color: var(--pico-muted-color); }
+    @media (max-width: 480px) { main.container { padding-top: 1.5rem; } .search-form button { padding-inline: .8rem; } }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="brand">
+      <h1>SurfFlow Search</h1>
+      <small>Local Files</small>
+    </header>
+
+    <form id="search-form" class="search-form" role="search">
+      <input id="query" name="q" type="search" placeholder="Search local files..." aria-label="搜索本地文件" autocomplete="off" autofocus>
+      <button type="submit">Search</button>
+    </form>
+
+    <p id="status" class="meta" role="status" aria-live="polite">输入关键词开始搜索</p>
+    <ul id="results" class="results" aria-label="搜索结果"></ul>
+  </main>
+
+  <script>
+    // Modify this to match your existing FastAPI local-file search route.
+    const SEARCH_API = '/api/v1/files/search';
+
+    const form = document.querySelector('#search-form');
+    const input = document.querySelector('#query');
+    const status = document.querySelector('#status');
+    const results = document.querySelector('#results');
+    let controller = null;
+
+    function normalizeResults(data) {
+      const items = Array.isArray(data) ? data : (data.items ?? data.results ?? data.files ?? []);
+      if (!Array.isArray(items)) throw new Error('搜索 API 返回格式不正确：缺少结果数组');
+      return items.map(item => {
+        const path = item.raw_path ?? item.file_path ?? item.filepath ?? item.fileInfo?.path ?? '';
+        return {
+          name: item.name ?? item.filename ?? item.file_name ?? (path ? path.split(/[\\/]/).pop() : '') ?? '',
+          path,
+          type: item.extension ?? item.ext ?? item.file_type ?? '',
+          score: item.score ?? item.similarity ?? null,
+        };
+      });
+    }
+
+    function renderFiles(files) {
+      results.replaceChildren();
+      const fragment = document.createDocumentFragment();
+      for (const file of files) {
+        const li = document.createElement('li');
+        const name = document.createElement('div');
+        name.className = 'file-name';
+        name.textContent = file.name || '(unnamed file)';
+
+        const path = document.createElement('div');
+        path.className = 'file-path';
+        path.textContent = file.path;
+
+        const extras = document.createElement('div');
+        extras.className = 'file-extras';
+        const tags = [];
+        if (file.type) tags.push(String(file.type).replace(/^\./, '').toUpperCase());
+        if (typeof file.score === 'number') tags.push(`Score ${file.score.toFixed(3)}`);
+        extras.textContent = tags.join(' · ');
+
+        li.append(name, path, extras);
+        fragment.appendChild(li);
+      }
+      results.appendChild(fragment);
+    }
+
+    async function search(query) {
+      controller?.abort();
+      controller = new AbortController();
+      results.replaceChildren();
+      if (!query) {
+        status.textContent = '输入关键词开始搜索';
+        return;
+      }
+
+      status.textContent = '正在搜索…';
+      try {
+        const url = new URL(SEARCH_API, window.location.origin);
+        url.searchParams.set('q', query);
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const files = normalizeResults(await response.json());
+        renderFiles(files);
+        status.textContent = files.length ? `找到 ${files.length} 个文件` : '没有找到匹配的文件';
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.error(error);
+        status.textContent = `搜索失败：${error.message}`;
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const q = input.value.trim();
+      const url = new URL(window.location.href);
+      if (q) url.searchParams.set('q', q);
+      else url.searchParams.delete('q');
+      history.pushState(null, '', url);
+      search(q);
+    });
+
+    window.addEventListener('popstate', () => {
+      const q = new URLSearchParams(location.search).get('q') ?? '';
+      input.value = q;
+      search(q);
+    });
+
+    const initialQuery = new URLSearchParams(location.search).get('q') ?? '';
+    input.value = initialQuery;
+    search(initialQuery);
+  </script>
+</body>
+</html>
