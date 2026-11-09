@@ -1,6 +1,7 @@
 # coding=utf-8
 import re
 import subprocess
+from typing import Annotated
 
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Query, Header, APIRouter, Depends
@@ -172,12 +173,11 @@ def search_page(request: Request):
 
 
 @app.get("/api/v1/files/search")
-def search_file(q: str, n: int = 10):
-    # 数学：它的内容、方法和意义
-    print(n, q)
+def search_file(q: str,
+                n: Annotated[int, Query(ge=1, le=100)] = 10):
     searcher = get_default_local_file_searcher()
     files = searcher.search(q, limit=n)
-    print(files)
+    logger.debug(files[:5])
     return files
 
 

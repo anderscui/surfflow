@@ -90,7 +90,7 @@
       results.appendChild(fragment);
     }
 
-    async function search(query) {
+    async function search(query, n=10) {
       controller?.abort();
       controller = new AbortController();
       results.replaceChildren();
@@ -103,6 +103,7 @@
       try {
         const url = new URL(SEARCH_API, window.location.origin);
         url.searchParams.set('q', query);
+        url.searchParams.set('n', String(n));
         const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const files = normalizeResults(await response.json());
@@ -121,19 +122,29 @@
       const url = new URL(window.location.href);
       if (q) url.searchParams.set('q', q);
       else url.searchParams.delete('q');
+
+      const n = Number(url.searchParams.get('n')) || 10;
+      url.searchParams.set('n', String(n));
+
       history.pushState(null, '', url);
-      search(q);
+      search(q, n);
     });
 
     window.addEventListener('popstate', () => {
-      const q = new URLSearchParams(location.search).get('q') ?? '';
+      const params = new URLSearchParams(location.search);
+      const q = params.get('q') ?? '';
+      const n = Number(params.get('n')) || 10;
+
       input.value = q;
-      search(q);
+      search(q, n);
     });
 
-    const initialQuery = new URLSearchParams(location.search).get('q') ?? '';
+    const initialParams = new URLSearchParams(location.search);
+    const initialQuery = initialParams.get('q') ?? '';
+    const initialN = Number(initialParams.get('n')) || 10;
+
     input.value = initialQuery;
-    search(initialQuery);
+    search(initialQuery, initialN);
   </script>
 </body>
 </html>

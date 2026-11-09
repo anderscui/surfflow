@@ -220,6 +220,9 @@ class ElasticsearchClient:
 
     def search_docs_by_embedding(self, index: str, target_field: str, query_vector, k=10, num_candidates=100,
                    excludes=None, file_types=None, min_file_size=100):
+        if num_candidates < k:
+            num_candidates = k
+
         if excludes is None:
             excludes = ['embedding']
 

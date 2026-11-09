@@ -219,6 +219,7 @@ if __name__ == '__main__':
     for p in hybrid_searcher.search('金瓶梅', limit=10):
         print(p.raw_path)
 
+    # 数学：它的内容、方法和意义
     print()
     for p in hybrid_searcher.search('西游记', limit=10):
         print(p.raw_path)
