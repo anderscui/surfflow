@@ -22,6 +22,24 @@
     .file-extras:empty { display: none; }
     .hint { margin-top: 1rem; color: var(--pico-muted-color); }
     @media (max-width: 480px) { main.container { padding-top: 1.5rem; } .search-form button { padding-inline: .8rem; } }
+
+    .file-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-top: .55rem;
+    }
+
+    .file-actions button {
+      width: auto;
+      margin: 0;
+      padding: .25rem .6rem;
+      font-size: .75rem;
+    }
+
+    .file-actions .archive {
+      margin-left: auto;
+    }
   </style>
 </head>
 <body>
@@ -64,6 +82,34 @@
       });
     }
 
+    function createFileActions(file) {
+      const actions = document.createElement('div');
+      actions.className = 'file-actions';
+
+      const buttons = [
+        ['Open', 'open'],
+        ['Reveal', 'reveal'],
+        ['Copy Path', 'copy_path'],
+        ['Archive', 'archive'],
+      ];
+
+      for (const [label, action] of buttons) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = label;
+        button.className = 'secondary outline';
+
+        if (action === 'archive') {
+          button.classList.add('archive');
+        }
+
+        button.addEventListener('click', () => handleFileAction(action, file));
+        actions.appendChild(button);
+      }
+
+      return actions;
+    }
+
     function renderFiles(files) {
       results.replaceChildren();
       const fragment = document.createDocumentFragment();
@@ -84,10 +130,55 @@
         if (typeof file.score === 'number') tags.push(`Score ${file.score.toFixed(3)}`);
         extras.textContent = tags.join(' · ');
 
-        li.append(name, path, extras);
+        const actions = createFileActions(file);
+        li.append(name, path, extras, actions);
         fragment.appendChild(li);
       }
       results.appendChild(fragment);
+    }
+
+    const FILE_ACTION_API = '/api/v1/files/action';
+
+    async function handleFileAction(action, file) {
+      if (action === 'copy_path') {
+        try {
+          await navigator.clipboard.writeText(file.path);
+        } catch (error) {
+          console.error('Copy path failed:', error);
+          alert(`复制失败：${error.message}`);
+        }
+        return;
+      }
+
+      if (action === 'archive') {
+        if (!confirm(`确定归档这个文件？\n${file.path}`)) {
+          return;
+        }
+      }
+
+      try {
+        const response = await fetch(FILE_ACTION_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            raw_path: file.path,
+            action
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        }
+
+        if (action === 'archive') {
+          status.textContent = `已归档：${file.name}`;
+        }
+      } catch (error) {
+        console.error(`${action} failed:`, error);
+        alert(`操作失败：${error.message}`);
+      }
     }
 
     async function search(query, n=10) {
