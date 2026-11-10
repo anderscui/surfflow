@@ -117,3 +117,16 @@ CREATE TABLE IF NOT EXISTS douban_book_chart_entries
 );
 CREATE INDEX IF NOT EXISTS idx_douban_book_chart_entries_book
     ON douban_book_chart_entries (book_id);
+
+CREATE TABLE IF NOT EXISTS file_tags (
+    raw_path TEXT NOT NULL,
+    tagger TEXT NOT NULL,
+    tags_version TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    tags_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (raw_path, tagger, tags_version)
+);
+CREATE INDEX idx_file_tags_tagger_version
+ON file_tags(tagger, tags_version);

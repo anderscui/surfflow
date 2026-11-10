@@ -638,5 +638,50 @@
     "tag": "逻辑学",
     "frequency": 1,
     "original_count": 1
+  },
+  {
+    "tag": "语言学习",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "艺术",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "绘画",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "中国绘画",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "书法",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "摄影",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "建筑",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "电影",
+    "frequency": 1,
+    "original_count": 1
+  },
+  {
+    "tag": "音乐",
+    "frequency": 1,
+    "original_count": 1
   }
 ]
