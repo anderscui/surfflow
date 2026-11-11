@@ -42,3 +42,5 @@ ES_MAPPINGS_FILE = os.path.join(DATA_DIR, f'mappings/local_files.json')
 # REDIS_EMBEDDING_DB = os.getenv('REDIS_EMBEDDING_DB')
 SURFFLOW_DB = os.getenv('SURFFLOW_DB', '~/works/dbs/surfflow/surfflow.db')
 SURFFLOW_EMB_DB = os.getenv('SURFFLOW_EMB_DB', '~/works/dbs/surfflow/surfflow_emb.db')
+
+LOCAL_FILE_TAG_VERSION = '0.1'
