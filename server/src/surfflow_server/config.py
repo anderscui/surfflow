@@ -44,3 +44,4 @@ SURFFLOW_DB = os.getenv('SURFFLOW_DB', '~/works/dbs/surfflow/surfflow.db')
 SURFFLOW_EMB_DB = os.getenv('SURFFLOW_EMB_DB', '~/works/dbs/surfflow/surfflow_emb.db')
 
 LOCAL_FILE_TAG_VERSION = '0.1'
+LOCAL_FILE_TAG_FILE = DATA_DIR / 'local_file_tags.json'
