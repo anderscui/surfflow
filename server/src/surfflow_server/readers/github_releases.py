@@ -151,5 +151,5 @@ if __name__ == '__main__':
                              release_predate=lambda release: 'TIME Magazine' in release,
                              per_page=50,
                              max_pages=10,
-                             stop_tag='tm-20241125',
+                             stop_tag='tm-20261109',
                              dry_run=False)
