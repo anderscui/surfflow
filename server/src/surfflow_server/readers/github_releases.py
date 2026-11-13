@@ -1,5 +1,6 @@
 # coding=utf-8
 from pathlib import Path
+from typing import Callable
 
 import requests
 
@@ -26,9 +27,9 @@ def download_file(session, url, dest):
 def download_github_releases(
     repo: str,
     output_dir: str | Path,
-    release_contains: str = '',
+    release_predate: Callable | None = None,
     asset_contains: str = '',
-    asset_suffix: str = '.epub',
+    asset_suffix: str = '',
     start_page: int = 1,
     per_page: int = 30,
     max_pages: int | None = None,
@@ -95,7 +96,7 @@ def download_github_releases(
                     'downloaded': downloaded,
                 }
 
-            if release_contains not in name:
+            if release_predate is not None and not release_predate(name):
                 continue
 
             matched += 1
@@ -142,3 +143,13 @@ def download_github_releases(
         'matched': matched,
         'downloaded': downloaded,
     }
+
+
+if __name__ == '__main__':
+    download_github_releases('plsy1/emagzines',
+                             '/Users/andersc/data/dev/surfflow/github_release/emagzines',
+                             release_predate=lambda release: 'TIME Magazine' in release,
+                             per_page=50,
+                             max_pages=10,
+                             stop_tag='tm-20241125',
+                             dry_run=False)
