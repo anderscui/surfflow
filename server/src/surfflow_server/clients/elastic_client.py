@@ -9,7 +9,7 @@ from typing import Any
 from archaeo.io.docs import LocalFileMetadata
 from archaeo.iterable import filter_by_keys
 
-from surfflow_server.config import logger, ES_SERVER, ES_INDEX_LOCAL_FILE, ES_MAPPINGS_FILE
+from surfflow_server.config import logger, ES_SERVER, ES_INDEX_LOCAL_FILE, ES_FILE_MAPPINGS_FILE
 from surfflow_server.schemas.files import FileInfo, FileEmbedding
 
 from elasticsearch import Elasticsearch, helpers
@@ -264,7 +264,7 @@ if __name__ == '__main__':
     #     client.delete_index(ES_INDEX_LOCAL_FILE)
     #     print(f'index {ES_INDEX_LOCAL_FILE} deleted')
     #
-    # mappings = json_load(ES_MAPPINGS_FILE)
+    # mappings = json_load(ES_FILE_MAPPINGS_FILE)
     # client.create_index(ES_INDEX_LOCAL_FILE, mappings)
     #
     # # index docs

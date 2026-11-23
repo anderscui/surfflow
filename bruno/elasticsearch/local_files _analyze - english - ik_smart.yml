@@ -1,0 +1,23 @@
+info:
+  name: local_files _analyze - english - ik_smart
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: http://localhost:9200/_analyze
+  body:
+    type: json
+    data: |-
+      {
+        "analyzer": "ik_smart",
+        "text": "On a drizzly Saturday night this month, someone released dozens of exotic birds near the ancient Longhua Temple in Shanghai."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

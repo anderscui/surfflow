@@ -1,7 +1,7 @@
 info:
   name: local_files _analyze - keyword field
   type: http
-  seq: 13
+  seq: 15
 
 http:
   method: POST
@@ -20,3 +20,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

@@ -1,0 +1,51 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "english_text": {
+          "type": "english"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "chunk_id": {
+        "type": "keyword"
+      },
+      "document_id": {
+        "type": "keyword"
+      },
+      "article_id": {
+        "type": "keyword"
+      },
+      "chunk_index": {
+        "type": "integer"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "english_text"
+      },
+      "breadcrumbs": {
+        "type": "keyword"
+      },
+      "collection": {
+        "type": "keyword"
+      },
+      "source_type": {
+        "type": "keyword"
+      },
+      "published_at": {
+        "type": "date"
+      },
+      "published_year": {
+        "type": "integer"
+      },
+      "text": {
+        "type": "text",
+        "analyzer": "english_text"
+      }
+    }
+  }
+}

@@ -37,7 +37,10 @@ logger.debug(f'source dirs: {SOURCE_DIRS}, count: {len(SOURCE_DIRS)}')
 ES_SERVER = os.getenv('ES_SERVER', 'http://localhost:9200')
 ES_INDEX_LOCAL_FILE = 'local_files'
 ES_VERSION = '20260715_1'
-ES_MAPPINGS_FILE = os.path.join(DATA_DIR, f'mappings/local_files.json')
+ES_FILE_MAPPINGS_FILE = os.path.join(DATA_DIR, f'mappings/local_files.json')
+
+ES_INDEX_SURFFLOW_DOC = 'surfflow_docs'
+ES_DOC_MAPPINGS_FILE = os.path.join(DATA_DIR, f'mappings/surfflow_docs.json')
 
 # REDIS_EMBEDDING_DB = os.getenv('REDIS_EMBEDDING_DB')
 SURFFLOW_DB = os.getenv('SURFFLOW_DB', '~/works/dbs/surfflow/surfflow.db')
