@@ -1,7 +1,7 @@
 # coding=utf-8
 from elasticsearch import Elasticsearch
 
-from surfflow_server.config import ES_INDEX_SURFFLOW_DOC, ES_DOC_MAPPINGS_FILE
+from surfflow_server.config import ES_INDEX_SURFFLOW_DOC, ES_DOC_MAPPINGS_FILE, ES_SERVER
 
 
 def create_chunk_index(es: Elasticsearch, mappings):
@@ -15,6 +15,6 @@ def create_chunk_index(es: Elasticsearch, mappings):
 if __name__ == '__main__':
     from archaeo.io.files import json_load
 
-    es = Elasticsearch('http://localhost:9200')
+    es = Elasticsearch(ES_SERVER)
     mappings = json_load(ES_DOC_MAPPINGS_FILE)
     create_chunk_index(es, mappings)

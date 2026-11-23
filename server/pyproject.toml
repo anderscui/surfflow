@@ -9,11 +9,14 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.15.0",
+    "dateparser>=1.5.1",
+    "ebooklib>=0.21",
     "elasticsearch>=9.4.1",
     "fastapi>=0.162.7",
     "humanize>=4.17.0",
     "jinja2>=3.1.6",
     "loguru>=0.8.0",
+    "lxml>=6.1.1",
     "markdown-it-py>=4.3.0",
     "mutagen>=1.48.1",
     "openai>=3.51.0",
