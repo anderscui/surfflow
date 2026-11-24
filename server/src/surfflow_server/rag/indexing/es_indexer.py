@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+from datetime import date, datetime
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -144,7 +145,7 @@ def parse_issue_date(issue_date: str):
     return dateparser.parse(issue_date, settings=dp_settings)
 
 
-def index_files(source_dir: str | Path, es: Elasticsearch, es_index: str):
+def index_files(source_dir: str | Path, es: Elasticsearch, es_index: str, max_chars: int=3000):
     files = sorted(list_files(source_dir, '*.epub'))
 
     total_docs = 0
@@ -166,7 +167,7 @@ def index_files(source_dir: str | Path, es: Elasticsearch, es_index: str):
         doc, articles = parse_epub_doc(file, doc_key,
                                        doc_collection=mag,
                                        published_at=published_at)
-        all_chunks = chunk_articles(articles, max_chars=2000)
+        all_chunks = chunk_articles(articles, max_chars=max_chars)
         print(doc.title, len(articles), len(all_chunks))
         indexed = index_chunks(es, doc, articles, all_chunks, index_name=es_index)
         es.indices.refresh(index=es_index)
@@ -183,7 +184,7 @@ if __name__ == '__main__':
     dt2 = parse_issue_date("2026-09")
     print(dt1.date(), dt2.date())
 
-    from datetime import date, datetime
+    import time
     from archaeo.io.epub_docs import parse_epub_doc
     from archaeo.io.files import get_absolute_path, list_files
     from archaeo.rag.chunking import chunk_articles
@@ -193,9 +194,15 @@ if __name__ == '__main__':
     # file = get_absolute_path(file)
     # print(parse_magazine_filename(file))
 
+    start = time.time()
     source_dir = '~/data/dev/surfflow/magazines/epub'
     es = Elasticsearch(ES_SERVER)
-    index_files(source_dir, es, es_index=ES_INDEX_SURFFLOW_DOC)
+    # max_chars=2000: indexed: 105 docs, 6711 articles, 26150 chunks;44.5mb;13.9s;
+    # max_chars=3000: indexed: 105 docs, 6711 articles, 18015 chunks;42.9mb;13.8s;
+    # max_chars=4000: indexed: 105 docs, 6711 articles, 14181 chunks;42.1mb;13.6s;
+    # max_chars=5000: indexed: 105 docs, 6711 articles, 11931 chunks;41.9mb;12.9s;
+    index_files(source_dir, es, es_index=ES_INDEX_SURFFLOW_DOC, max_chars=5000)
+    print(f'time elapsed: {time.time() - start:.3f}')
 
     # doc_key = 'te-2026.11.21'
     # doc, articles = parse_epub_doc(file, doc_key, 'the_economist',

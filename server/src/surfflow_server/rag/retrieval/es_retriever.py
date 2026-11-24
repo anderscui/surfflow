@@ -89,9 +89,9 @@ if __name__ == '__main__':
     # query = 'Communist Party'
     # query = 'James Bond'
     # query = 'Era of games'
-    # query = 'Ukraine Russia'
+    query = 'Ukraine Russia'
     # query = 'OpenAI Anthropic Google'
-    query = 'China Japan Korea'
+    # query = 'China Japan Korea'
     # query = 'New York socialist mayor'
     # query = 'Wikipedia internet'
     hits = search_bm25(
