@@ -10,6 +10,8 @@ from surfflow_server.config import SURFFLOW_DB, ES_SERVER, ES_INDEX_SURFFLOW_DOC
 from surfflow_server.data_access.database import connect_db
 from surfflow_server.data_access.rag import save_rag_document, count_rag_chunks, list_rag_document_ids, \
     get_rag_document, get_rag_articles, get_rag_chunks
+from surfflow_server.rag.embedding import embed_texts
+from surfflow_server.rag.indexing.dense import index_chunk_embeddings
 from surfflow_server.rag.indexing.es_indexer import parse_magazine_filename, parse_issue_date, index_chunks
 
 
@@ -83,6 +85,96 @@ def index_magazines_from_db(es, index_name: str):
     print(f'Indexed {total} chunks')
 
 
+def index_magazine_embeddings_from_db(es, index_name: str):
+    total = 0
+
+    with connect_db(SURFFLOW_DB) as conn:
+        for document_id in list_rag_document_ids(conn):
+            doc = get_rag_document(conn, document_id)
+            articles = get_rag_articles(conn, document_id)
+            chunks = get_rag_chunks(conn, document_id)
+
+            assert doc is not None
+
+            print('indexing:', doc.title, len(articles), len(chunks))
+
+            indexed = index_chunk_embeddings(es, chunks, embed_texts, ES_INDEX_SURFFLOW_DOC, batch_size=10, skip_existing=True)
+            total += indexed
+            print()
+
+    es.indices.refresh(index=index_name)
+    print(f'Indexed {total} chunks')
+
+
+def add_dense_vector_field(
+    es: Elasticsearch,
+    index_name: str,
+    field_name: str = 'embedding_06b',
+    dims: int = 1024,
+):
+    es.indices.put_mapping(
+        index=index_name,
+        properties={
+            field_name: {
+                'type': 'dense_vector',
+                'dims': dims,
+                'index': True,
+                'similarity': 'cosine',
+            }
+        },
+    )
+
+
+def show_embedding_field_count(es: Elasticsearch):
+    for field in ['embedding', 'embedding_06b', 'embedding_gamma_740m']:
+        count = es.count(
+            index=ES_INDEX_SURFFLOW_DOC,
+            query={'exists': {'field': field}},
+        )['count']
+
+        print(field, count)
+
+
+def remove_embedding_fields(
+    es: Elasticsearch,
+    index_name: str,
+    fields: list[str] | None = None,
+):
+    if fields is None:
+        fields = ['embedding', 'embedding_gamma_740m']
+
+    response = es.update_by_query(
+        index=index_name,
+        body={
+            'query': {
+                'bool': {
+                    'should': [
+                        {'exists': {'field': field}}
+                        for field in fields
+                    ],
+                    'minimum_should_match': 1,
+                },
+            },
+            'script': {
+                'source': '''
+                    for (def field : params.fields) {
+                        ctx._source.remove(field);
+                    }
+                ''',
+                'lang': 'painless',
+                'params': {
+                    'fields': fields,
+                },
+            },
+        },
+        conflicts='proceed',
+        refresh=True,
+        wait_for_completion=True,
+    )
+
+    return response
+
+
 if __name__ == '__main__':
     import time
 
@@ -96,4 +188,10 @@ if __name__ == '__main__':
     # print(f'found {len(all_doc_ids)} docs: {all_doc_ids[:2]}')
 
     es = Elasticsearch(ES_SERVER)
-    index_magazines_from_db(es, index_name=ES_INDEX_SURFFLOW_DOC)
+    # index_magazines_from_db(es, index_name=ES_INDEX_SURFFLOW_DOC)
+    # index_magazine_embeddings_from_db(es, ES_INDEX_SURFFLOW_DOC)
+
+    # add_dense_vector_field(es, ES_INDEX_SURFFLOW_DOC, field_name='embedding_06b', dims=1024)
+    # add_dense_vector_field(es, ES_INDEX_SURFFLOW_DOC, field_name='embedding_gamma_740m', dims=768)
+    show_embedding_field_count(es)
+    # print(remove_embedding_fields(es, ES_INDEX_SURFFLOW_DOC, fields=['embedding', 'embedding_gamma_740m']))
